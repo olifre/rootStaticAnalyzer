@@ -16,6 +16,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __utilityFunctions_h__
+#define __utilityFunctions_h__
+
+namespace utilityFunctions {
+	TString searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath);
+	TString performPathLookup(const char* file, Bool_t aRemoveRootIncludePath = kFALSE);
+};
+
 // Inspired by TSystem::IsFileInIncludePath(), extended with possibility to strip ROOT_INCLUDE_PATH from lookup for special checks.
 TString searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath) {
 	if (!aFileName || !aFileName[0]) {
@@ -93,46 +101,6 @@ TString performPathLookup(const char* file, Bool_t aRemoveRootIncludePath = kFAL
 	return fileName;
 }
 
-void throwErrorInternal(const char* file, Int_t line, const char* message) {
-	std::cerr << file << ":" << line << ": " << message << std::endl;
-}
-
-Bool_t throwError(const char* file, TPRegexp* lineMatcher, const char* message) {
-	const TString& fileName = performPathLookup(file, kTRUE);
-	Int_t lineNo = 0;
-	if (gSystem->AccessPathName(fileName.Data()) == kFALSE) {
-		// False means FILE EXISTS!
-		FILE *f = fopen(fileName.Data(), "r");
-		char line[4096];
-		Bool_t found = kFALSE;
-		while (fgets(line, sizeof(line), f) != nullptr) {
-			lineNo++;
-			if (lineMatcher->MatchB(line)) {
-				// Found match!
-				// Check whether there is a suppression active for this line.
-				TPRegexp suppressExpr(".*rootStaticAnalyzer: ignore.*");
-				if (suppressExpr.MatchB(line)) {
-					// Yes, ignore that.
-					return kFALSE;
-				}
-				found = kTRUE;
-				break;
-			}
-			if (feof(f)) {
-				// Reached EOF, not found:
-				lineNo = 0;
-				break;
-			}
-		}
-		if (!found) {
-			lineNo = 0;
-		}
-		fclose(f);
-	}
-	throwErrorInternal(fileName.Data(), lineNo, message);
-	return kTRUE;
-}
-
 TString StreamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj) {
 		// NECESSARY: Reset the map of the buffer, we are re-using it.
 		// Buffers store internally a map of all known object pointers to only write them once.
@@ -200,3 +168,4 @@ std::map<TString, TMD5> GetRealDataDigests(TObject* obj) {
 	return digests;
 }
 
+#endif /* __utilityFunctions_h__ */

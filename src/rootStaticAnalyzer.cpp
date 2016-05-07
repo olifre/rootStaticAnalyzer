@@ -34,6 +34,7 @@
 #include <TPRegexp.h>
 
 #include "utilityFunctions.h"
+#include "errorHandling.h"
 
 int main(int argc, char** argv) {
 	TBufferFile buf(TBuffer::kWrite, 10000);
@@ -151,14 +152,14 @@ int main(int argc, char** argv) {
 				auto& memberName = memberCheck.first;
 				if (memberCheck.second != digests_2[memberName]) {
 					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
-					throwError(cls->GetDeclFileName(), &searchExpr,
+					errorHandling::throwError(cls->GetDeclFileName(), &searchExpr,
 					           TString::Format("error: Streamed member '%s' of dataobject '%s' not initialized by constructor!", memberName.Data(), cls->GetName()));
 					foundAmemberToBlame = kTRUE;
 				}
 
 			}
 			if (!foundAmemberToBlame) {
-				throwError(cls->GetDeclFileName(), 0,
+				errorHandling::throwError(cls->GetDeclFileName(), 0,
 				           TString::Format("error: Dataobject '%s' streams uninitialized memory after default construction, unable to find the member which causes this!", cls->GetName()));
 			}
 		}
