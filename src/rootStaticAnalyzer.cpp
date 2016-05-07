@@ -122,19 +122,19 @@ int main(int argc, char** argv) {
 		TObject* obj;
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
 		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_1a = StreamObjectToBufferAndChecksum(buf, obj);
-		auto digests_1a = GetRealDataDigests(obj);
+		TString digest_1a = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+		auto digests_1a = utilityFunctions::getRealDataDigests(obj);
 		cls->Destructor(obj, kTRUE);
 
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
 		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_1b = StreamObjectToBufferAndChecksum(buf, obj);
+		TString digest_1b = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
 		cls->Destructor(obj, kTRUE);
 
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_2);
 		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_2 = StreamObjectToBufferAndChecksum(buf, obj);
-		auto digests_2 = GetRealDataDigests(obj);
+		TString digest_2 = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+		auto digests_2 = utilityFunctions::getRealDataDigests(obj);
 		cls->Destructor(obj, kTRUE);
 
 		/* We only test whether uninitialized memory is picked up.
@@ -143,14 +143,11 @@ int main(int argc, char** argv) {
 		if ((digest_1a == digest_1b) && (digest_1a != digest_2)) {
 			std::cerr << "ERROR: " << cls->GetName() << " streams uninitialized memory, hash: " << digest_1a.Data() << " -> " << digest_2.Data() << std::endl;
 
-			const TString& fileName = performPathLookup(cls->GetDeclFileName(), kTRUE);
-			std::cout << fileName.Data() << std::endl;
-
 			// Blame members!
 			Bool_t foundAmemberToBlame = kFALSE;
 			for (auto memberCheck : digests_1a) {
 				auto& memberName = memberCheck.first;
-				if (memberCheck.second != digests_2[memberName]) {
+				if (memberCheck.second.first != digests_2[memberName].first) {
 					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
 					errorHandling::throwError(cls->GetDeclFileName(), &searchExpr,
 					           TString::Format("error: Streamed member '%s' of dataobject '%s' not initialized by constructor!", memberName.Data(), cls->GetName()));

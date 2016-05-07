@@ -22,10 +22,14 @@
 namespace utilityFunctions {
 	TString searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath);
 	TString performPathLookup(const char* file, Bool_t aRemoveRootIncludePath = kFALSE);
+	
+	std::map<TString, std::pair<TMD5, TRealData*>> getRealDataDigests(TObject* obj);
+	TString streamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj);
+
 };
 
 // Inspired by TSystem::IsFileInIncludePath(), extended with possibility to strip ROOT_INCLUDE_PATH from lookup for special checks.
-TString searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath) {
+TString utilityFunctions::searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath) {
 	if (!aFileName || !aFileName[0]) {
 		return kFALSE;
 	}
@@ -84,7 +88,7 @@ TString searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath)
 	}
 }
 
-TString performPathLookup(const char* file, Bool_t aRemoveRootIncludePath = kFALSE) {
+TString utilityFunctions::performPathLookup(const char* file, Bool_t aRemoveRootIncludePath) {
 	TString fileName = file;
 	if (gSystem->AccessPathName(file) != kFALSE) {
 		// False means FILE EXISTS, i.e. we come here if it does not exist!
@@ -101,7 +105,7 @@ TString performPathLookup(const char* file, Bool_t aRemoveRootIncludePath = kFAL
 	return fileName;
 }
 
-TString StreamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj) {
+TString utilityFunctions::streamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj) {
 		// NECESSARY: Reset the map of the buffer, we are re-using it.
 		// Buffers store internally a map of all known object pointers to only write them once.
 		// For our check, we re-use the buffer and re-write to it from the start - thus, we need to reset the map.
@@ -127,8 +131,8 @@ TString StreamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj) {
 		return checkSum.AsString();
 }
 
-std::map<TString, TMD5> GetRealDataDigests(TObject* obj) {
-	std::map<TString, TMD5> digests;
+std::map<TString, std::pair<TMD5, TRealData*>> utilityFunctions::getRealDataDigests(TObject* obj) {
+	std::map<TString, std::pair<TMD5, TRealData*>> digests;
 	
 	auto realData = obj->IsA()->GetListOfRealData();
 	if (realData != nullptr && realData->GetEntries() > 0) {
@@ -153,8 +157,9 @@ std::map<TString, TMD5> GetRealDataDigests(TObject* obj) {
 			auto memberAddress = reinterpret_cast<UChar_t*>(obj) + rd->GetThisOffset();
 			auto& digest = digests[rd->GetName()];
 			//digest = new TMD5();
-			digest.Update(memberAddress, dt->Size()/sizeof(UChar_t));
-			digest.Final();
+			digest.first.Update(memberAddress, dt->Size()/sizeof(UChar_t));
+			digest.first.Final();
+			digest.second = rd;
 			/*
 			if (obj->IsA() == TClass::GetClass("TRandom3")) {
 				rd->Dump();

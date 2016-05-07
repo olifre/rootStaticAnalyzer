@@ -19,6 +19,8 @@
 #ifndef __errorHandling_h__
 #define __errorHandling_h__
 
+#include "utilityFunctions.h"
+
 class errorHandling {
  private:
 	static void throwErrorInternal(const char* file, Int_t line, const char* message) {
@@ -29,7 +31,7 @@ class errorHandling {
 };
 
 Bool_t errorHandling::throwError(const char* file, TPRegexp* lineMatcher, const char* message) {
-	const TString& fileName = performPathLookup(file, kTRUE);
+	const TString& fileName = utilityFunctions::performPathLookup(file, kTRUE);
 	Int_t lineNo = 0;
 	if (gSystem->AccessPathName(fileName.Data()) == kFALSE) {
 		// False means FILE EXISTS!
