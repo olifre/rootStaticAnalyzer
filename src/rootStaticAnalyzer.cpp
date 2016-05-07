@@ -141,16 +141,19 @@ int main(int argc, char** argv) {
 		   In that case, the digest_1x will agree, but disagree with digest_2 which used the differently
 		   initialized arena. */
 		if ((digest_1a == digest_1b) && (digest_1a != digest_2)) {
-			std::cerr << "ERROR: " << cls->GetName() << " streams uninitialized memory, hash: " << digest_1a.Data() << " -> " << digest_2.Data() << std::endl;
-
 			// Blame members!
 			Bool_t foundAmemberToBlame = kFALSE;
 			for (auto memberCheck : digests_1a) {
 				auto& memberName = memberCheck.first;
+				auto memberDataMember = memberCheck.second.second->GetDataMember();
+				auto memberDataType   = memberDataMember->GetDataType();
 				if (memberCheck.second.first != digests_2[memberName].first) {
 					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
 					errorHandling::throwError(cls->GetDeclFileName(), &searchExpr,
-					           TString::Format("error: Streamed member '%s' of dataobject '%s' not initialized by constructor!", memberName.Data(), cls->GetName()));
+					           TString::Format("error: Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
+					                           (memberDataType != nullptr) ? TString::Format("%s ", memberDataType->GetName()).Data() : "",
+					                           memberName.Data(),
+					                           cls->GetName()));
 					foundAmemberToBlame = kTRUE;
 				}
 
