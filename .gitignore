@@ -29,3 +29,7 @@
 
 # Backup copies from emacs
 *~
+
+# Allow build and install in correspondig subdirectories
+build*/
+install*/
