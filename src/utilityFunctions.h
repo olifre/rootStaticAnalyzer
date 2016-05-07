@@ -157,7 +157,7 @@ std::map<TString, std::pair<TMD5, TRealData*>> utilityFunctions::getRealDataDige
 			auto memberAddress = reinterpret_cast<UChar_t*>(obj) + rd->GetThisOffset();
 			auto& digest = digests[rd->GetName()];
 			//digest = new TMD5();
-			digest.first.Update(memberAddress, dt->Size()/sizeof(UChar_t));
+			digest.first.Update(memberAddress, dm->GetUnitSize()/sizeof(UChar_t));
 			digest.first.Final();
 			digest.second = rd;
 			/*

@@ -145,7 +145,8 @@ int main(int argc, char** argv) {
 			Bool_t foundAmemberToBlame = kFALSE;
 			for (auto memberCheck : digests_1a) {
 				auto& memberName = memberCheck.first;
-				auto memberDataMember = memberCheck.second.second->GetDataMember();
+				auto memberRealData   = memberCheck.second.second;
+				auto memberDataMember = memberRealData->GetDataMember();
 				auto memberDataType   = memberDataMember->GetDataType();
 				if (memberCheck.second.first != digests_2[memberName].first) {
 					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
