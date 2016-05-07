@@ -21,7 +21,6 @@ else()
   message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-
 # Use root-config to auto-include ROOT (root-config must be in PATH)
 EXEC_PROGRAM( root-config ARGS "--incdir" OUTPUT_VARIABLE ROOT_INCLUDE_DIR RETURN_VALUE RETVAR1)
 MESSAGE(STATUS "Found ROOT include path at ${ROOT_INCLUDE_DIR}")
@@ -33,14 +32,31 @@ MESSAGE(STATUS "Using cflags from ROOT: ${ROOT_CFLAGS}")
 
 IF(${RETVAR1}${RETVAR2}${RETVAR3} MATCHES "000")
 	include_directories(${ROOT_INCLUDE_DIR})
-	
+
 	# Prefer our flags, but don't deny the ROOT ones: 
 	SET(CMAKE_CXX_FLAGS "${ROOT_CFLAGS} ${CMAKE_CXX_FLAGS}")
-	
-	ADD_SUBDIRECTORY(src)	
 ELSE()
 	MESSAGE(FATAL_ERROR "ERROR: root-config did not provide LIBRARY and INCLUDE path, is ROOT installed and root-config in PATH?")
 ENDIF()
+
+
+INCLUDE(ExternalProject)
+
+ExternalProject_Add(
+  OptionParser
+  GIT_REPOSITORY https://github.com/BGO-OD/OptionParser.git
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	-DINSTALL_STATIC_LIBS=ON
+  LOG_BUILD 1 LOG_CONFIGURE 1 LOG_DOWNLOAD 1 LOG_INSTALL 1
+  )
+ExternalProject_Get_Property(OptionParser INSTALL_DIR)
+set(OPTIONPARSER_INCLUDE_DIR ${INSTALL_DIR}/include/)
+set(OPTIONPARSER_LIBRARIES ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}options_static${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+include_directories(${OPTIONPARSER_INCLUDE_DIR})
+
+ADD_SUBDIRECTORY(src)	
 
 #SET(MANDIR "share/man/man1" CACHE FILEPATH "mandir")
 #INSTALL(FILES rootStaticAnalyzer.1 DESTINATION ${MANDIR})
