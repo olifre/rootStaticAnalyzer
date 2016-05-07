@@ -144,6 +144,10 @@ std::map<TString, std::pair<TMD5, TRealData*>> utilityFunctions::getRealDataDige
 				// Skip that.
 				continue;
 			}
+			if (rd->TestBit(TRealData::kTransient)) {
+				// Skip transient members. 
+				continue;
+			}
 			auto dm = rd->GetDataMember();
 			auto dt = dm->GetDataType();
 			if (dt == nullptr) {
