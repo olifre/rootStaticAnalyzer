@@ -80,4 +80,5 @@ script:
   - make
   - make install
   - cd ${TRAVIS_BUILD_DIR}/install
+  - rootStaticAnalyzer --help
   - rootStaticAnalyzer
