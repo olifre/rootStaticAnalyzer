@@ -7,6 +7,7 @@ PROJECT(rootStaticAnalyzer)
 # Extra warnings. 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Woverloaded-virtual -Wshadow -Wextra")
 
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 include(CheckCXXCompilerFlag)
 
@@ -39,24 +40,11 @@ ELSE()
 	MESSAGE(FATAL_ERROR "ERROR: root-config did not provide LIBRARY and INCLUDE path, is ROOT installed and root-config in PATH?")
 ENDIF()
 
+find_package(OptionParser REQUIRED COMPONENT MAYBEBUILTIN)
+include_directories(${OptionParser_INCLUDE_DIRS})
+SET(CMAKE_CXX_FLAGS "${OptionParser_CFLAGS} ${CMAKE_CXX_FLAGS}")
 
-INCLUDE(ExternalProject)
-
-ExternalProject_Add(
-  OptionParser
-  GIT_REPOSITORY https://github.com/BGO-OD/OptionParser.git
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	-DINSTALL_STATIC_LIBS=ON
-  LOG_BUILD 1 LOG_CONFIGURE 1 LOG_DOWNLOAD 1 LOG_INSTALL 1
-  )
-ExternalProject_Get_Property(OptionParser INSTALL_DIR)
-set(OPTIONPARSER_INCLUDE_DIR ${INSTALL_DIR}/include/)
-set(OPTIONPARSER_LIBRARIES ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}options_static${CMAKE_STATIC_LIBRARY_SUFFIX})
-
-include_directories(${OPTIONPARSER_INCLUDE_DIR})
-
-ADD_SUBDIRECTORY(src)	
+ADD_SUBDIRECTORY(src)
 
 #SET(MANDIR "share/man/man1" CACHE FILEPATH "mandir")
 #INSTALL(FILES rootStaticAnalyzer.1 DESTINATION ${MANDIR})

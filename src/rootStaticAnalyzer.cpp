@@ -38,13 +38,9 @@
 #include "errorHandling.h"
 
 int main(int argc, char** argv) {
-
-
 	OptionParser parser("Simple static analyzer for ROOT and ROOT-based projects");
 	auto unusedOptions = parser.fParse(argc, argv);
 
-	
-	
 	TBufferFile buf(TBuffer::kWrite, 10000);
 
 	gClassTable->Init();
