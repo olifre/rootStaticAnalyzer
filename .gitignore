@@ -30,6 +30,9 @@
 # Backup copies from emacs
 *~
 
+# ycm-completion
+.ycm_extra_conf.pyc
+
 # Allow build and install in correspondig subdirectories
 build*/
 install*/
