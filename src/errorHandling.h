@@ -1,5 +1,5 @@
 /*
-  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects. 
+  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects.
   Copyright (C) 2016  Oliver Freyermuth
 
   This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,11 @@
 #include "utilityFunctions.h"
 
 class errorHandling {
- private:
+  private:
 	static void throwErrorInternal(const char* file, Int_t line, const char* message) {
 		std::cerr << file << ":" << line << ": " << message << std::endl;
 	}
- public:
+  public:
 	static Bool_t throwError(const char* file, TPRegexp* lineMatcher, const char* message);
 };
 

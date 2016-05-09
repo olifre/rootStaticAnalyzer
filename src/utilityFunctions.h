@@ -1,5 +1,5 @@
 /*
-  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects. 
+  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects.
   Copyright (C) 2016  Oliver Freyermuth
 
   This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 namespace utilityFunctions {
 	TString searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath);
 	TString performPathLookup(const char* file, Bool_t aRemoveRootIncludePath = kFALSE);
-	
+
 	void parseRootmap(const char* aFilename, std::set<std::string>& classNames);
 
 	TString getRootLibDir();
@@ -172,7 +172,7 @@ TString utilityFunctions::getRootLibDir() {
 }
 
 std::set<std::string> utilityFunctions::getRootmapsByRegexps(const std::vector<std::string>& rootMapPatterns, bool debug) {
-	
+
 	std::vector<TPRegexp> rootMapRegexps;
 	for (auto& pattern : rootMapPatterns) {
 		rootMapRegexps.emplace_back(pattern);
@@ -204,9 +204,9 @@ std::set<std::string> utilityFunctions::getRootmapsByRegexps(const std::vector<s
 }
 
 void utilityFunctions::filterSetByPatterns(std::set<std::string>& allNames,
-                                           const std::vector<std::string>& namePatterns,
-                                           const std::vector<std::string>& nameAntiPatterns,
-                                           bool debug) {
+        const std::vector<std::string>& namePatterns,
+        const std::vector<std::string>& nameAntiPatterns,
+        bool debug) {
 	if (!namePatterns.empty()) {
 		// Remove all which do not match any regexp in namePattern.
 		std::vector<TPRegexp> nameRegexps;

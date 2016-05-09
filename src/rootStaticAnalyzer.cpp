@@ -1,5 +1,5 @@
 /*
-  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects. 
+  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects.
   Copyright (C) 2016  Oliver Freyermuth
 
   This program is free software: you can redistribute it and/or modify
@@ -50,34 +50,34 @@ int main(int argc, char** argv) {
 	OptionContainer<std::string> classNamePatterns('c', "classNamePattern", "Regexp to match class-names to test, can be given multiple times. '.*' (or no pattern given) tests all.");
 	OptionContainer<std::string> classNameAntiPatterns('C', "classNameAntiPattern", "Regexp to match class-names NOT to test, can be given multiple times. Applied after a class has matched the classNamePattern.");
 	Option<bool> debug('d', "debug", "Make a lot of debug-noise to debug this program itself.", false);
-	
-	// We need a TApplication-instance to allow for rootmap-checks - at least for ROOT 5. 
+
+	// We need a TApplication-instance to allow for rootmap-checks - at least for ROOT 5.
 	gROOT->SetBatch(kTRUE);
 	TApplication app("app", nullptr, nullptr);
 
 	//gSystem->ResetSignal(kSigSegmentationViolation, true);
-	
+
 	auto unusedOptions = parser.fParse(argc, argv);
 
 	if (rootMapPatterns.empty()) {
 		/* Test ROOT only. */
 		TString rootLibDir(utilityFunctions::getRootLibDir());
-		rootMapPatterns.emplace_back(TString(rootLibDir+"/.*\\.rootmap").Data());
+		rootMapPatterns.emplace_back(TString(rootLibDir + "/.*\\.rootmap").Data());
 	}
 
-	// Get all rootmaps filtered by the patterns. 
+	// Get all rootmaps filtered by the patterns.
 	std::set<std::string> allClasses{utilityFunctions::getRootmapsByRegexps(rootMapPatterns, debug)};
 
 	// Filter by classname-patterns.
 	utilityFunctions::filterSetByPatterns(allClasses, classNamePatterns, classNameAntiPatterns, debug);
-		
+
 	if (debug) {
 		std::cout << "List of considered classes:" << std::endl;
 		for (auto& clsName : allClasses) {
 			std::cout << "- " << clsName << std::endl;
 		}
 	}
-	
+
 	TBufferFile buf(TBuffer::kWrite, 10000);
 
 	for (auto& clsName : allClasses) {
@@ -105,20 +105,20 @@ int main(int argc, char** argv) {
 
 		//HACK
 		if (TString(cls->GetName()).BeginsWith("TEve")
-		    || TString(cls->GetName()).BeginsWith("TGL")
-		    || strcmp(cls->GetName(), "TGraphStruct") == 0
-		    || strcmp(cls->GetName(), "TMaterial") == 0
-		    || strcmp(cls->GetName(), "TMixture") == 0
-		    || strcmp(cls->GetName(), "TNode") == 0
-		    || strcmp(cls->GetName(), "TNodeDiv") == 0
-		    || strcmp(cls->GetName(), "TParallelCoord") == 0
-		    || strcmp(cls->GetName(), "TParallelCoordVar") == 0
-		    || strcmp(cls->GetName(), "TQueryDescription") == 0
-		    || strcmp(cls->GetName(), "TRotMatrix") == 0
-		    || strcmp(cls->GetName(), "TSessionDescription") == 0
-		    || strcmp(cls->GetName(), "TMinuit2TraceObject") == 0
-		    || cls->InheritsFrom("TShape")
-		    ) {
+		        || TString(cls->GetName()).BeginsWith("TGL")
+		        || strcmp(cls->GetName(), "TGraphStruct") == 0
+		        || strcmp(cls->GetName(), "TMaterial") == 0
+		        || strcmp(cls->GetName(), "TMixture") == 0
+		        || strcmp(cls->GetName(), "TNode") == 0
+		        || strcmp(cls->GetName(), "TNodeDiv") == 0
+		        || strcmp(cls->GetName(), "TParallelCoord") == 0
+		        || strcmp(cls->GetName(), "TParallelCoordVar") == 0
+		        || strcmp(cls->GetName(), "TQueryDescription") == 0
+		        || strcmp(cls->GetName(), "TRotMatrix") == 0
+		        || strcmp(cls->GetName(), "TSessionDescription") == 0
+		        || strcmp(cls->GetName(), "TMinuit2TraceObject") == 0
+		        || cls->InheritsFrom("TShape")
+		   ) {
 			continue;
 		}
 		//HACK
@@ -138,8 +138,9 @@ int main(int argc, char** argv) {
 			std::cerr << "Something bad happened... " << excode << std::endl;
 			constructionDestructionFailed = true;
 			Throw( excode );
-		}	ENDTRY;
- 		//std::cout << "END Constructor/destructor test for " << cls->GetName() << std::endl;
+		}
+		ENDTRY;
+		//std::cout << "END Constructor/destructor test for " << cls->GetName() << std::endl;
 
 		if (constructionDestructionFailed) {
 			continue;
@@ -159,17 +160,17 @@ int main(int argc, char** argv) {
 				continue;
 			}
 		}
-		
+
 		//HACK
 		if (strcmp(cls->GetName(), "TKDE") == 0
-		    || strcmp(cls->GetName(), "TCanvas") == 0
-		    || strcmp(cls->GetName(), "TInspectCanvas") == 0
-		    || strcmp(cls->GetName(), "TGeoBranchArray") == 0
-		    || strcmp(cls->GetName(), "TStreamerInfo") == 0
-		    || strcmp(cls->GetName(), "TTreeRow") == 0
-		    || strcmp(cls->GetName(), "THelix") == 0
-		    || strcmp(cls->GetName(), "TClonesArray") == 0
-		    || strcmp(cls->GetName(), "TBranchObject") == 0) {
+		        || strcmp(cls->GetName(), "TCanvas") == 0
+		        || strcmp(cls->GetName(), "TInspectCanvas") == 0
+		        || strcmp(cls->GetName(), "TGeoBranchArray") == 0
+		        || strcmp(cls->GetName(), "TStreamerInfo") == 0
+		        || strcmp(cls->GetName(), "TTreeRow") == 0
+		        || strcmp(cls->GetName(), "THelix") == 0
+		        || strcmp(cls->GetName(), "TClonesArray") == 0
+		        || strcmp(cls->GetName(), "TBranchObject") == 0) {
 			continue;
 		}
 		//HACK
@@ -216,10 +217,11 @@ int main(int argc, char** argv) {
 		} CATCH ( excode ) {
 			errorHandling::throwError(cls->GetDeclFileName(), 0,
 			                          TString::Format("Streaming of class '%s' failed fatally, needs manual investigation! Check the stacktrace!",
-			                                          cls->GetName()));
+			                                  cls->GetName()));
 			streamingWorked = false;
 			Throw( excode );
-		}	ENDTRY;
+		}
+		ENDTRY;
 		decltype(streamingUtils::getRealDataDigests(obj)) digests_1a;
 		if (streamingWorked) {
 			digests_1a = streamingUtils::getRealDataDigests(obj);
@@ -228,7 +230,8 @@ int main(int argc, char** argv) {
 			cls->Destructor(obj, kTRUE);
 		} CATCH ( excode ) {
 			Throw( excode );
-		}	ENDTRY;
+		}
+		ENDTRY;
 		if (!streamingWorked) {
 			continue;
 		}
@@ -240,12 +243,14 @@ int main(int argc, char** argv) {
 			digest_1b = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
 		} CATCH ( excode ) {
 			Throw( excode );
-		}	ENDTRY;
+		}
+		ENDTRY;
 		TRY {
 			cls->Destructor(obj, kTRUE);
 		} CATCH ( excode ) {
 			Throw( excode );
-		}	ENDTRY;
+		}
+		ENDTRY;
 
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_2);
 		obj = static_cast<TObject*>(cls->New(storageArena));
@@ -254,13 +259,15 @@ int main(int argc, char** argv) {
 			digest_2 = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
 		} CATCH ( excode ) {
 			Throw( excode );
-		}	ENDTRY;
+		}
+		ENDTRY;
 		auto digests_2 = streamingUtils::getRealDataDigests(obj);
 		TRY {
 			cls->Destructor(obj, kTRUE);
 		} CATCH ( excode ) {
 			Throw( excode );
-		}	ENDTRY;
+		}
+		ENDTRY;
 
 		/* We only test whether uninitialized memory is picked up.
 		   In that case, the digest_1x will agree, but disagree with digest_2 which used the differently
@@ -276,17 +283,17 @@ int main(int argc, char** argv) {
 				if (memberCheck.second.first != digests_2[memberName].first) {
 					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
 					errorHandling::throwError(cls->GetDeclFileName(), &searchExpr,
-					           TString::Format("error: Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
-					                           (memberDataType != nullptr) ? TString::Format("%s ", memberDataType->GetName()).Data() : "",
-					                           memberName.Data(),
-					                           cls->GetName()));
+					                          TString::Format("error: Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
+					                                  (memberDataType != nullptr) ? TString::Format("%s ", memberDataType->GetName()).Data() : "",
+					                                  memberName.Data(),
+					                                  cls->GetName()));
 					foundAmemberToBlame = kTRUE;
 				}
 
 			}
 			if (!foundAmemberToBlame) {
 				errorHandling::throwError(cls->GetDeclFileName(), 0,
-				           TString::Format("error: Dataobject '%s' streams uninitialized memory after default construction, unable to find the member which causes this!", cls->GetName()));
+				                          TString::Format("error: Dataobject '%s' streams uninitialized memory after default construction, unable to find the member which causes this!", cls->GetName()));
 			}
 		}
 	}

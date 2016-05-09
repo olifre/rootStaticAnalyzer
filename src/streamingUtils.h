@@ -1,5 +1,5 @@
 /*
-  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects. 
+  rootStaticAnalyzer - A simple post-compile-time analyzer for ROOT and ROOT-based projects.
   Copyright (C) 2016  Oliver Freyermuth
 
   This program is free software: you can redistribute it and/or modify
@@ -27,29 +27,29 @@ namespace streamingUtils {
 };
 
 TString streamingUtils::streamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj) {
-		// NECESSARY: Reset the map of the buffer, we are re-using it.
-		// Buffers store internally a map of all known object pointers to only write them once.
-		// For our check, we re-use the buffer and re-write to it from the start - thus, we need to reset the map.
-		buf.ResetMap();
+	// NECESSARY: Reset the map of the buffer, we are re-using it.
+	// Buffers store internally a map of all known object pointers to only write them once.
+	// For our check, we re-use the buffer and re-write to it from the start - thus, we need to reset the map.
+	buf.ResetMap();
 
-		// Reset buffer pointer to 0.
-		buf.SetBufferOffset(0);
+	// Reset buffer pointer to 0.
+	buf.SetBufferOffset(0);
 
-		// Add the clonesarray itself to the map to prevent self-reference issues.
-		buf.MapObject(obj);
+	// Add the clonesarray itself to the map to prevent self-reference issues.
+	buf.MapObject(obj);
 
-		// Stream it.
-		obj->Streamer(buf);
+	// Stream it.
+	obj->Streamer(buf);
 
-		// Start the check.
-		Int_t bufSize = buf.Length();
-		buf.SetBufferOffset(0);
-		char* bufPtr  = buf.Buffer();
+	// Start the check.
+	Int_t bufSize = buf.Length();
+	buf.SetBufferOffset(0);
+	char* bufPtr  = buf.Buffer();
 
-		TMD5 checkSum;
-		checkSum.Update(reinterpret_cast<UChar_t*>(bufPtr), bufSize);
-		checkSum.Final();
-		return checkSum.AsString();
+	TMD5 checkSum;
+	checkSum.Update(reinterpret_cast<UChar_t*>(bufPtr), bufSize);
+	checkSum.Final();
+	return checkSum.AsString();
 }
 
 std::map<TString, std::pair<TMD5, TRealData*>> streamingUtils::getRealDataDigests(TObject* obj) {
@@ -67,7 +67,7 @@ std::map<TString, std::pair<TMD5, TRealData*>> streamingUtils::getRealDataDigest
 				continue;
 			}
 			if (rd->TestBit(TRealData::kTransient)) {
-				// Skip transient members. 
+				// Skip transient members.
 				continue;
 			}
 			auto dm = rd->GetDataMember();
@@ -88,7 +88,7 @@ std::map<TString, std::pair<TMD5, TRealData*>> streamingUtils::getRealDataDigest
 			}
 			auto& digest = digests[rd->GetName()];
 			//digest = new TMD5();
-			digest.first.Update(memberAddress, dm->GetUnitSize()/sizeof(UChar_t));
+			digest.first.Update(memberAddress, dm->GetUnitSize() / sizeof(UChar_t));
 			digest.first.Final();
 			digest.second = rd;
 			/*
