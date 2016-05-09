@@ -34,6 +34,12 @@ namespace utilityFunctions {
 	TString streamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj);
 
 	TString getRootLibDir();
+
+	std::set<std::string> getRootmapsByRegexps(const std::vector<std::string>& rootMapPatterns, bool debug);
+	void filterSetByPatterns(std::set<std::string>& allClasses,
+	                         const std::vector<std::string>& classNamePatterns,
+	                         const std::vector<std::string>& classNameAntiPatterns,
+	                         bool debug);
 };
 
 // Inspired by TSystem::IsFileInIncludePath(), extended with possibility to strip ROOT_INCLUDE_PATH from lookup for special checks.
@@ -236,6 +242,89 @@ TString utilityFunctions::getRootLibDir() {
 	TString rootLibDir(sharedLibWithPath);
 	delete [] sharedLibWithPath;
 	return rootLibDir;
+}
+
+std::set<std::string> utilityFunctions::getRootmapsByRegexps(const std::vector<std::string>& rootMapPatterns, bool debug) {
+	
+	std::vector<TPRegexp> rootMapRegexps;
+	for (auto& pattern : rootMapPatterns) {
+		rootMapRegexps.emplace_back(pattern);
+	}
+
+	// Construct list of all classes to test.
+	std::set<std::string> allClasses;
+	{
+		TObjArray* rootMaps = gInterpreter->GetRootMapFiles();
+		TIter next(rootMaps);
+		TNamed* rootMapName;
+		while ((rootMapName = dynamic_cast<TNamed*>(next())) != nullptr) {
+			TString path = rootMapName->GetTitle();
+			if (debug) {
+				std::cout << "Checking rootmap-path " << path.Data() << std::endl;
+			}
+			for (auto& pattern : rootMapRegexps) {
+				if (pattern.MatchB(path)) {
+					utilityFunctions::parseRootmap(path.Data(), allClasses);
+					if (debug) {
+						std::cout << "Path matched by regex '" << pattern.GetPattern() << "'." << std::endl;
+					}
+					break;
+				}
+			}
+		}
+	}
+	return allClasses;
+}
+
+void utilityFunctions::filterSetByPatterns(std::set<std::string>& allNames,
+                                           const std::vector<std::string>& namePatterns,
+                                           const std::vector<std::string>& nameAntiPatterns,
+                                           bool debug) {
+	if (!namePatterns.empty()) {
+		// Remove all which do not match any regexp in namePattern.
+		std::vector<TPRegexp> nameRegexps;
+		for (auto& pattern : namePatterns) {
+			nameRegexps.emplace_back(pattern);
+		}
+		auto allNamesSav = allNames;
+		for (auto& name : allNamesSav) {
+			bool oneMatched = false;
+			for (auto& regex : nameRegexps) {
+				if (regex.MatchB(name)) {
+					if (debug) {
+						std::cout << "'" << name << "' kept since it matched pattern '" << regex.GetPattern().Data() << "'." << std::endl;
+					}
+					oneMatched = true;
+					break;
+				}
+			}
+			if (!oneMatched) {
+				if (debug) {
+					std::cout << "'" << name << "' removed since it did not match any pattern." << std::endl;
+				}
+				allNames.erase(name);
+			}
+		}
+	}
+	if (!nameAntiPatterns.empty()) {
+		// Remove all which match any regexp in nameAntiPattern.
+		std::vector<TPRegexp> nameRegexps;
+		for (auto& pattern : nameAntiPatterns) {
+			nameRegexps.emplace_back(pattern);
+		}
+		auto allNamesSav = allNames;
+		for (auto& name : allNamesSav) {
+			for (auto& regex : nameRegexps) {
+				if (regex.MatchB(name)) {
+					if (debug) {
+						std::cout << "'" << name << "' kept since it matched anti-pattern '" << regex.GetPattern().Data() << "'." << std::endl;
+					}
+					allNames.erase(name);
+					break;
+				}
+			}
+		}
+	}
 }
 
 #endif /* __utilityFunctions_h__ */

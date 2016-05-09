@@ -61,90 +61,17 @@ int main(int argc, char** argv) {
 	auto unusedOptions = parser.fParse(argc, argv);
 
 	if (rootMapPatterns.empty()) {
-		/* Test ROOT only.
-		   First, determine path where ROOT is. 
-		*/
+		/* Test ROOT only. */
 		TString rootLibDir(utilityFunctions::getRootLibDir());
 		rootMapPatterns.emplace_back(TString(rootLibDir+"/.*\\.rootmap").Data());
 	}
 
-	std::vector<TPRegexp> rootMapRegexps;
-	for (auto& pattern : rootMapPatterns) {
-		rootMapRegexps.emplace_back(pattern);
-	}
-
-	// Construct list of all classes to test.
-	std::set<std::string> allClasses;
-	{
-		TObjArray* rootMaps = gInterpreter->GetRootMapFiles();
-		TIter next(rootMaps);
-		TNamed* rootMapName;
-		while ((rootMapName = dynamic_cast<TNamed*>(next())) != nullptr) {
-			TString path = rootMapName->GetTitle();
-			if (debug) {
-				std::cout << "Checking rootmap-path " << path.Data() << std::endl;
-			}
-			for (auto& pattern : rootMapRegexps) {
-				if (pattern.MatchB(path)) {
-					utilityFunctions::parseRootmap(path.Data(), allClasses);
-					if (debug) {
-						std::cout << "Path matched by regex '" << pattern.GetPattern() << "'." << std::endl;
-					}
-					break;
-				}
-			}
-		}
-	}
+	// Get all rootmaps filtered by the patterns. 
+	std::set<std::string> allClasses{utilityFunctions::getRootmapsByRegexps(rootMapPatterns, debug)};
 
 	// Filter by classname-patterns.
-	{
-		if (!classNamePatterns.empty()) {
-			// Remove all which do not match any regexp in classNamePattern.
-			std::vector<TPRegexp> classNameRegexps;
-			for (auto& pattern : classNamePatterns) {
-				classNameRegexps.emplace_back(pattern);
-			}
-			auto allClassesSav = allClasses;
-			for (auto& clsName : allClassesSav) {
-				bool oneMatched = false;
-				for (auto& regex : classNameRegexps) {
-					if (regex.MatchB(clsName)) {
-						if (debug) {
-							std::cout << "Class '" << clsName << "' kept since it matched pattern '" << regex.GetPattern().Data() << "'." << std::endl;
-						}
-						oneMatched = true;
-						break;
-					}
-				}
-				if (!oneMatched) {
-					if (debug) {
-						std::cout << "Class '" << clsName << "' removed since it did not match any classname-pattern." << std::endl;
-					}
-					allClasses.erase(clsName);
-				}
-			}
-		}
-		if (!classNameAntiPatterns.empty()) {
-			// Remove all which match any regexp in classNameAntiPattern.
-			std::vector<TPRegexp> classNameRegexps;
-			for (auto& pattern : classNameAntiPatterns) {
-				classNameRegexps.emplace_back(pattern);
-			}
-			auto allClassesSav = allClasses;
-			for (auto& clsName : allClassesSav) {
-				for (auto& regex : classNameRegexps) {
-					if (regex.MatchB(clsName)) {
-						if (debug) {
-							std::cout << "Class '" << clsName << "' kept since it matched anti-pattern '" << regex.GetPattern().Data() << "'." << std::endl;
-						}
-						allClasses.erase(clsName);
-						break;
-					}
-				}
-			}
-		}
-	}
-
+	utilityFunctions::filterSetByPatterns(allClasses, classNamePatterns, classNameAntiPatterns, debug);
+		
 	if (debug) {
 		std::cout << "List of considered classes:" << std::endl;
 		for (auto& clsName : allClasses) {
