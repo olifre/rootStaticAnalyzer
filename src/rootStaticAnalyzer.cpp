@@ -42,8 +42,7 @@
 #include "Options.h"
 #include "utilityFunctions.h"
 #include "errorHandling.h"
-
-
+#include "streamingUtils.h"
 
 int main(int argc, char** argv) {
 	OptionParser parser("Simple static analyzer for ROOT and ROOT-based projects");
@@ -213,7 +212,7 @@ int main(int argc, char** argv) {
 		obj = static_cast<TObject*>(cls->New(storageArena));
 		TString digest_1a;
 		TRY {
-			digest_1a = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+			digest_1a = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
 		} CATCH ( excode ) {
 			errorHandling::throwError(cls->GetDeclFileName(), 0,
 			                          TString::Format("Streaming of class '%s' failed fatally, needs manual investigation! Check the stacktrace!",
@@ -221,9 +220,9 @@ int main(int argc, char** argv) {
 			streamingWorked = false;
 			Throw( excode );
 		}	ENDTRY;
-		decltype(utilityFunctions::getRealDataDigests(obj)) digests_1a;
+		decltype(streamingUtils::getRealDataDigests(obj)) digests_1a;
 		if (streamingWorked) {
-			digests_1a = utilityFunctions::getRealDataDigests(obj);
+			digests_1a = streamingUtils::getRealDataDigests(obj);
 		}
 		TRY {
 			cls->Destructor(obj, kTRUE);
@@ -238,7 +237,7 @@ int main(int argc, char** argv) {
 		obj = static_cast<TObject*>(cls->New(storageArena));
 		TString digest_1b;
 		TRY {
-			digest_1b = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+			digest_1b = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
 		} CATCH ( excode ) {
 			Throw( excode );
 		}	ENDTRY;
@@ -252,11 +251,11 @@ int main(int argc, char** argv) {
 		obj = static_cast<TObject*>(cls->New(storageArena));
 		TString digest_2;
 		TRY {
-			digest_2 = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+			digest_2 = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
 		} CATCH ( excode ) {
 			Throw( excode );
 		}	ENDTRY;
-		auto digests_2 = utilityFunctions::getRealDataDigests(obj);
+		auto digests_2 = streamingUtils::getRealDataDigests(obj);
 		TRY {
 			cls->Destructor(obj, kTRUE);
 		} CATCH ( excode ) {
