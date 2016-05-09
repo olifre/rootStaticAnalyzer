@@ -26,6 +26,7 @@
 #include <TClass.h>
 
 #include <TROOT.h>
+#include <TException.h>
 #include <TApplication.h>
 #include <TSystem.h>
 #include <TList.h>
@@ -42,6 +43,8 @@
 #include "utilityFunctions.h"
 #include "errorHandling.h"
 
+
+
 int main(int argc, char** argv) {
 	OptionParser parser("Simple static analyzer for ROOT and ROOT-based projects");
 	OptionContainer<std::string> rootMapPatterns('r', "rootMapPattern", "Regexp to match rootmaps to test with, can be given multiple times. '.*' matches all, no patterns given => test ROOT only.");
@@ -49,6 +52,8 @@ int main(int argc, char** argv) {
 	// We need a TApplication-instance to allow for rootmap-checks - at least for ROOT 5. 
 	gROOT->SetBatch(kTRUE);
 	TApplication app("app", nullptr, nullptr);
+
+	//gSystem->ResetSignal(kSigSegmentationViolation, true);
 	
 	auto unusedOptions = parser.fParse(argc, argv);
 
@@ -138,15 +143,37 @@ int main(int argc, char** argv) {
 		std::vector<UInt_t> storageArenaVector(uintCount);
 		auto storageArena = storageArenaVector.data();
 
-		
+		// Test default construction / destruction.
+		Bool_t constructionDestructionFailed = false;
 		//std::cout << "BEGIN Constructor/destructor test for " << cls->GetName() << std::endl;
-		// Test default construction / destruction. 
+		TRY {
+			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
+			cls->Destructor(obj, kTRUE);
+		} CATCH ( excode ) {
+			std::cerr << "Something bad happened... " << excode << std::endl;
+			constructionDestructionFailed = true;
+			Throw( excode );
+		}	ENDTRY;
+ 		//std::cout << "END Constructor/destructor test for " << cls->GetName() << std::endl;
+
+		if (constructionDestructionFailed) {
+			continue;
+		}
+
+		// Check IsA().
 		{
 			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
-			//UInt_t memHash_1 = TString::Hash(&storageArena, sizeof(UInt_t)*uintCount);
+			bool IsAworked = true;
+			if (obj->IsA() == nullptr) {
+				errorHandling::throwError(cls->GetDeclFileName(), 0,
+				                          TString::Format("IsA() of TObject-inheriting class '%s' return nullptr, this is bad!", cls->GetName()));
+				IsAworked = false;
+			}
 			cls->Destructor(obj, kTRUE);
+			if (!IsAworked) {
+				continue;
+			}
 		}
-		//std::cout << "END Constructor/destructor test for " << cls->GetName() << std::endl;
 		
 		//std::cout << cls->GetName() << std::endl;
 
@@ -191,28 +218,66 @@ int main(int argc, char** argv) {
 				}
 			}
 		}
-		
+
 		UInt_t uninitializedUint_1 = 0xB33FD34D;
 		UInt_t uninitializedUint_2 = 0xD34DB33F;
 
 		// Stream it!
+		bool streamingWorked = true;
 		TObject* obj;
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
 		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_1a = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
-		auto digests_1a = utilityFunctions::getRealDataDigests(obj);
-		cls->Destructor(obj, kTRUE);
+		TString digest_1a;
+		TRY {
+			digest_1a = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+		} CATCH ( excode ) {
+			errorHandling::throwError(cls->GetDeclFileName(), 0,
+			                          TString::Format("Streaming of class '%s' failed fatally, needs manual investigation! Check the stacktrace!",
+			                                          cls->GetName()));
+			streamingWorked = false;
+			Throw( excode );
+		}	ENDTRY;
+		decltype(utilityFunctions::getRealDataDigests(obj)) digests_1a;
+		if (streamingWorked) {
+			digests_1a = utilityFunctions::getRealDataDigests(obj);
+		}
+		TRY {
+			cls->Destructor(obj, kTRUE);
+		} CATCH ( excode ) {
+			Throw( excode );
+		}	ENDTRY;
+		if (!streamingWorked) {
+			continue;
+		}
 
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
 		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_1b = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
-		cls->Destructor(obj, kTRUE);
+		TString digest_1b;
+		TRY {
+			digest_1b = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+		} CATCH ( excode ) {
+			Throw( excode );
+		}	ENDTRY;
+		TRY {
+			cls->Destructor(obj, kTRUE);
+		} CATCH ( excode ) {
+			Throw( excode );
+		}	ENDTRY;
 
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_2);
 		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_2 = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+		TString digest_2;
+		TRY {
+			digest_2 = utilityFunctions::streamObjectToBufferAndChecksum(buf, obj);
+		} CATCH ( excode ) {
+			Throw( excode );
+		}	ENDTRY;
 		auto digests_2 = utilityFunctions::getRealDataDigests(obj);
-		cls->Destructor(obj, kTRUE);
+		TRY {
+			cls->Destructor(obj, kTRUE);
+		} CATCH ( excode ) {
+			Throw( excode );
+		}	ENDTRY;
 
 		/* We only test whether uninitialized memory is picked up.
 		   In that case, the digest_1x will agree, but disagree with digest_2 which used the differently
