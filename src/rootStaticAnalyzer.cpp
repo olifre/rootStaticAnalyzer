@@ -73,9 +73,11 @@ int main(int argc, char** argv) {
 		TNamed* rootMapName;
 		while ((rootMapName = dynamic_cast<TNamed*>(next())) != nullptr) {
 			TString path = rootMapName->GetTitle();
+			//std::cout << "Checking path " << path.Data() << std::endl;
 			for (auto& pattern : rootMapRegexps) {
 				if (pattern.MatchB(path)) {
 					utilityFunctions::parseRootmap(path.Data(), allClasses);
+					//std::cout << "Path matched!" << std::endl;
 					break;
 				}
 			}
@@ -87,10 +89,12 @@ int main(int argc, char** argv) {
 	TBufferFile buf(TBuffer::kWrite, 10000);
 
 	for (auto& clsName : allClasses) {
+		/*
 		if (clsName[0]!='T') {
 			// Not a ROOT class, skip. 
 			continue;
 		}
+		*/
 		//std::cout << "LOADING class " << clsName << std::endl;
 		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
 		if (cls == nullptr) {
@@ -135,7 +139,7 @@ int main(int argc, char** argv) {
 		auto storageArena = storageArenaVector.data();
 
 		
-		std::cout << "BEGIN Constructor/destructor test for " << cls->GetName() << std::endl;
+		//std::cout << "BEGIN Constructor/destructor test for " << cls->GetName() << std::endl;
 		// Test default construction / destruction. 
 		{
 			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
@@ -172,12 +176,18 @@ int main(int argc, char** argv) {
 					TIter nextRD(realData);
 					TRealData* rd = nullptr;
 					while ((rd = dynamic_cast<TRealData*>(nextRD())) != nullptr) {
+						if (rd->TestBit(TRealData::kTransient)) {
+							// Skip transient members.
+							continue;
+						}
 						if (unstreamedData.Length() > 0) {
 							unstreamedData += ",";
 						}
 						unstreamedData += rd->GetName();
 					}
-					std::cerr << "ERROR: " << "Class " << cls->GetName() << " inherits from " << baseClPtr->GetName() << " which has class version " << baseClPtr->GetClassVersion() << ", members: " << unstreamedData.Data() << " will not be streamed!" << std::endl;
+					if (unstreamedData.Length() > 0) {
+						std::cerr << "ERROR: " << "Class " << cls->GetName() << " inherits from " << baseClPtr->GetName() << " which has class version " << baseClPtr->GetClassVersion() << ", members: " << unstreamedData.Data() << " will not be streamed!" << std::endl;
+					}
 				}
 			}
 		}
