@@ -99,6 +99,10 @@ int main(int argc, char** argv) {
 			// Abstract class, skip.
 			continue;
 		}
+		if (cls->GetDestructor() == nullptr) {
+			// Class with protected destructor, skip.
+			continue;
+		}
 
 		//HACK
 		if (TString(cls->GetName()).BeginsWith("TEve")
