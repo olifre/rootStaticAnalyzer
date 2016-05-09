@@ -19,13 +19,21 @@
 #ifndef __utilityFunctions_h__
 #define __utilityFunctions_h__
 
+#include <TString.h>
+#include <algorithm>
+#include <string>
+#include <set>
+
 namespace utilityFunctions {
 	TString searchInIncludePath(const char* aFileName, Bool_t aStripRootIncludePath);
 	TString performPathLookup(const char* file, Bool_t aRemoveRootIncludePath = kFALSE);
 	
+	void parseRootmap(const char* aFilename, std::set<std::string>& classNames);
+
 	std::map<TString, std::pair<TMD5, TRealData*>> getRealDataDigests(TObject* obj);
 	TString streamObjectToBufferAndChecksum(TBufferFile& buf, TObject* obj);
 
+	TString getRootLibDir();
 };
 
 // Inspired by TSystem::IsFileInIncludePath(), extended with possibility to strip ROOT_INCLUDE_PATH from lookup for special checks.
@@ -175,6 +183,59 @@ std::map<TString, std::pair<TMD5, TRealData*>> utilityFunctions::getRealDataDige
 		}
 	}
 	return digests;
+}
+
+void utilityFunctions::parseRootmap(const char* aFilename, std::set<std::string>& classNames) {
+	FILE *f = fopen(aFilename, "r");
+	char line[4096];
+	while (fgets(line, sizeof(line), f) != nullptr) {
+		char className[1024];
+		int conversions = sscanf(line, "Library.%s:%*[^\n]", className);
+		//std::cout << conversions << std::endl;
+		if (conversions == 1) {
+			// ROOT5-rootmap format, all fine.
+			char *lastColon = strrchr(className, ':');
+			(*lastColon) = '\0';
+			std::replace(className, lastColon, '@', ':');
+			std::replace(className, lastColon, '-', ' ');
+			classNames.insert(className);
+		} else {
+			// New rootmap-format?
+			conversions = sscanf(line, "class %[^\n]", className);
+			if (conversions == 1) {
+				// ROOT6-rootmap format, all fine.
+				classNames.insert(className);
+			} else {
+				if (conversions == EOF) {
+					break;
+				}
+				if (feof(f)) {
+					break;
+				}
+			}
+		}
+	}
+	fclose(f);
+}
+
+TString utilityFunctions::getRootLibDir() {
+	auto sharedLib = TROOT::Class()->GetSharedLibs();
+	auto sharedLibWithPath = gSystem->Which(gSystem->GetDynamicPath(), sharedLib);
+	if (strlen(sharedLibWithPath) == 0) {
+		std::cerr << "Could not find ROOT library directory!" << std::endl;
+		delete [] sharedLibWithPath;
+		exit(1);
+	}
+	auto lastSlash = strrchr(sharedLibWithPath, '/');
+	if (lastSlash == nullptr) {
+		std::cerr << "Bad ROOT library directory: " << sharedLibWithPath << "!" << std::endl;
+		delete [] sharedLibWithPath;
+		exit(1);
+	}
+	*lastSlash = '\0';
+	TString rootLibDir(sharedLibWithPath);
+	delete [] sharedLibWithPath;
+	return rootLibDir;
 }
 
 #endif /* __utilityFunctions_h__ */

@@ -17,11 +17,16 @@
 */
 
 #include <iostream>
+#include <list>
+#include <string>
+#include <string.h>
 
 #include <TInterpreter.h>
 #include <TClassTable.h>
 #include <TClass.h>
 
+#include <TROOT.h>
+#include <TApplication.h>
 #include <TSystem.h>
 #include <TList.h>
 #include <TBaseClass.h>
@@ -39,21 +44,55 @@
 
 int main(int argc, char** argv) {
 	OptionParser parser("Simple static analyzer for ROOT and ROOT-based projects");
+	OptionContainer<std::string> rootMapPatterns('r', "rootMapPattern", "Regexp to match rootmaps to test with, can be given multiple times. '.*' matches all, no patterns given => test ROOT only.");
+	
+	// We need a TApplication-instance to allow for rootmap-checks - at least for ROOT 5. 
+	gROOT->SetBatch(kTRUE);
+	TApplication app("app", nullptr, nullptr);
+	
 	auto unusedOptions = parser.fParse(argc, argv);
 
+	if (rootMapPatterns.empty()) {
+		/* Test ROOT only.
+		   First, determine path where ROOT is. 
+		*/
+		TString rootLibDir(utilityFunctions::getRootLibDir());
+		rootMapPatterns.emplace_back(TString(rootLibDir+"/.*\\.rootmap").Data());
+	}
+
+	std::vector<TPRegexp> rootMapRegexps;
+	for (auto& pattern : rootMapPatterns) {
+		rootMapRegexps.emplace_back(pattern);
+	}
+
+	// Construct list of all classes to test.
+	std::set<std::string> allClasses;
+	{
+		TObjArray* rootMaps = gInterpreter->GetRootMapFiles();
+		TIter next(rootMaps);
+		TNamed* rootMapName;
+		while ((rootMapName = dynamic_cast<TNamed*>(next())) != nullptr) {
+			TString path = rootMapName->GetTitle();
+			for (auto& pattern : rootMapRegexps) {
+				if (pattern.MatchB(path)) {
+					utilityFunctions::parseRootmap(path.Data(), allClasses);
+					break;
+				}
+			}
+		}
+	}
+	
+
+	
 	TBufferFile buf(TBuffer::kWrite, 10000);
 
-	gClassTable->Init();
-	const char* clsName;
-	Int_t clsIndex = 0;
-	while ((clsName = gClassTable->At(clsIndex)) != nullptr) {
-		clsIndex++;
-		if (clsName == nullptr || clsName[0]!='T') {
+	for (auto& clsName : allClasses) {
+		if (clsName[0]!='T') {
 			// Not a ROOT class, skip. 
 			continue;
 		}
 		//std::cout << "LOADING class " << clsName << std::endl;
-		auto cls = TClass::GetClass(clsName, kTRUE);
+		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
 		if (cls == nullptr) {
 			// Skip that.
 			continue;
@@ -70,11 +109,33 @@ int main(int argc, char** argv) {
 			continue;
 		}
 
+		//HACK
+		if (TString(cls->GetName()).BeginsWith("TEve")
+		    || TString(cls->GetName()).BeginsWith("TGL")
+		    || strcmp(cls->GetName(), "TGraphStruct") == 0
+		    || strcmp(cls->GetName(), "TMaterial") == 0
+		    || strcmp(cls->GetName(), "TMixture") == 0
+		    || strcmp(cls->GetName(), "TNode") == 0
+		    || strcmp(cls->GetName(), "TNodeDiv") == 0
+		    || strcmp(cls->GetName(), "TParallelCoord") == 0
+		    || strcmp(cls->GetName(), "TParallelCoordVar") == 0
+		    || strcmp(cls->GetName(), "TQueryDescription") == 0
+		    || strcmp(cls->GetName(), "TRotMatrix") == 0
+		    || strcmp(cls->GetName(), "TSessionDescription") == 0
+		    || strcmp(cls->GetName(), "TMinuit2TraceObject") == 0
+		    || cls->InheritsFrom("TShape")
+		    ) {
+			continue;
+		}
+		//HACK
+
 		UInt_t classSize = cls->Size();
 		UInt_t uintCount = classSize / sizeof(UInt_t) + 1;
-		auto storageArena = new UInt_t[uintCount];
+		std::vector<UInt_t> storageArenaVector(uintCount);
+		auto storageArena = storageArenaVector.data();
 
-		//std::cout << "BEGIN Constructor/destructor test for " << cls->GetName() << std::endl;
+		
+		std::cout << "BEGIN Constructor/destructor test for " << cls->GetName() << std::endl;
 		// Test default construction / destruction. 
 		{
 			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
@@ -89,8 +150,10 @@ int main(int argc, char** argv) {
 		if (strcmp(cls->GetName(), "TKDE") == 0
 		    || strcmp(cls->GetName(), "TCanvas") == 0
 		    || strcmp(cls->GetName(), "TInspectCanvas") == 0
+		    || strcmp(cls->GetName(), "TGeoBranchArray") == 0
 		    || strcmp(cls->GetName(), "TStreamerInfo") == 0
 		    || strcmp(cls->GetName(), "TTreeRow") == 0
+		    || strcmp(cls->GetName(), "THelix") == 0
 		    || strcmp(cls->GetName(), "TClonesArray") == 0
 		    || strcmp(cls->GetName(), "TBranchObject") == 0) {
 			continue;
