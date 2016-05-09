@@ -225,10 +225,12 @@ void utilityFunctions::parseRootmap(const char* aFilename, std::set<std::string>
 }
 
 TString utilityFunctions::getRootLibDir() {
-	auto sharedLib = TROOT::Class()->GetSharedLibs();
+	auto sharedLibChar = TROOT::Class()->GetSharedLibs();
+	TString sharedLib{sharedLibChar};
+	sharedLib = sharedLib.Remove(TString::kBoth, ' ');
 	auto sharedLibWithPath = gSystem->Which(gSystem->GetDynamicPath(), sharedLib);
-	if (strlen(sharedLibWithPath) == 0) {
-		std::cerr << "Could not find ROOT library directory!" << std::endl;
+	if (sharedLibWithPath == nullptr || strlen(sharedLibWithPath) == 0) {
+		std::cerr << "Could not find ROOT library directory, it should contain '" << sharedLib << "'!" << std::endl;
 		delete [] sharedLibWithPath;
 		exit(1);
 	}

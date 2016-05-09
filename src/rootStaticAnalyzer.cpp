@@ -82,12 +82,6 @@ int main(int argc, char** argv) {
 	TBufferFile buf(TBuffer::kWrite, 10000);
 
 	for (auto& clsName : allClasses) {
-		/*
-		if (clsName[0]!='T') {
-			// Not a ROOT class, skip. 
-			continue;
-		}
-		*/
 		//std::cout << "LOADING class " << clsName << std::endl;
 		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
 		if (cls == nullptr) {
@@ -163,8 +157,6 @@ int main(int argc, char** argv) {
 			}
 		}
 		
-		//std::cout << cls->GetName() << std::endl;
-
 		//HACK
 		if (strcmp(cls->GetName(), "TKDE") == 0
 		    || strcmp(cls->GetName(), "TCanvas") == 0
