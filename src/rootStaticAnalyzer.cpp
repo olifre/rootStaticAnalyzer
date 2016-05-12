@@ -78,22 +78,28 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	// Prepare sets of TClasses which can then be used for the various tests. 
+
+	// Silent TClass lookup, triggers autoloading / autoparsing. 
+	std::set<TClass*> allTClasses;
+	for (auto& clsName : allClasses) {
+		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
+		if (cls != nullptr) {
+			allTClasses.insert(cls);
+		}
+	}
+
+	// Set of TObject-inheriting classes. 
+	std::set<TClass*> allTObjects;
+	std::copy_if(allTClasses.begin(), allTClasses.end(), std::inserter(allTObjects, allTObjects.end()), [](TClass* cls){ return cls->InheritsFrom(TObject::Class()); });
+
+	// Set of DataObjects (TObjects with class version not <= 0). 
+	std::set<TClass*> allDataObjects;
+	std::copy_if(allTObjects.begin(), allTObjects.end(), std::inserter(allDataObjects, allDataObjects.end()), [](TClass* cls){ return !(cls->GetClassVersion() <= 0); });
+
 	TBufferFile buf(TBuffer::kWrite, 10000);
 
-	for (auto& clsName : allClasses) {
-		//std::cout << "LOADING class " << clsName << std::endl;
-		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
-		if (cls == nullptr) {
-			// Skip that.
-			continue;
-		}
-		// Only test TObject-inheriting classes.
-		if (!cls->InheritsFrom(TObject::Class())) {
-			continue;
-		}
-		if (cls->GetClassVersion() <= 0) {
-			continue;
-		}
+	for (auto& cls : allDataObjects) {
 		if (cls->GetNew() == nullptr) {
 			// Abstract class, skip.
 			continue;
