@@ -27,7 +27,7 @@ class testConstructionDestruction : public testInterface {
 		return aClass.fHasNew() && aClass.fHasDelete();
 	};
 
-	virtual void fRunTest(classObject& /*aClass*/) {
+	virtual bool fRunTest(classObject& /*aClass*/) {
 		return true;
 	};
 
