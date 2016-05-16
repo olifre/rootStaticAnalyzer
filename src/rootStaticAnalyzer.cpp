@@ -40,6 +40,9 @@
 #include <TPRegexp.h>
 
 #include "Options.h"
+
+#include "classObject.h"
+#include "testInterface.h"
 #include "utilityFunctions.h"
 #include "errorHandling.h"
 #include "streamingUtils.h"
@@ -54,8 +57,6 @@ int main(int argc, char** argv) {
 	// We need a TApplication-instance to allow for rootmap-checks - at least for ROOT 5.
 	gROOT->SetBatch(kTRUE);
 	TApplication app("app", nullptr, nullptr);
-
-	//gSystem->ResetSignal(kSigSegmentationViolation, true);
 
 	auto unusedOptions = parser.fParse(argc, argv);
 
@@ -78,14 +79,21 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	auto &foo = testInterface::fGetAllTests();
+	for (auto t : foo) {
+		std::cout << t.first << std::endl;
+	}
+
 	// Prepare sets of TClasses which can then be used for the various tests. 
 
 	// Silent TClass lookup, triggers autoloading / autoparsing. 
 	std::set<TClass*> allTClasses;
+	std::set<classObject> allClassObjects;
 	for (auto& clsName : allClasses) {
 		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
 		if (cls != nullptr) {
 			allTClasses.insert(cls);
+			allClassObjects.emplace(cls);
 		}
 	}
 
@@ -93,7 +101,7 @@ int main(int argc, char** argv) {
 	std::set<TClass*> allTObjects;
 	std::copy_if(allTClasses.begin(), allTClasses.end(), std::inserter(allTObjects, allTObjects.end()), [](TClass* cls){ return cls->InheritsFrom(TObject::Class()); });
 
-	// Set of DataObjects (TObjects with class version not <= 0). 
+	// Set of 
 	std::set<TClass*> allDataObjects;
 	std::copy_if(allTObjects.begin(), allTObjects.end(), std::inserter(allDataObjects, allDataObjects.end()), [](TClass* cls){ return !(cls->GetClassVersion() <= 0); });
 
