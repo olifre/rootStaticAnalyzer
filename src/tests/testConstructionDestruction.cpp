@@ -19,3 +19,38 @@
 #include "testConstructionDestruction.h"
 
 static testConstructionDestruction instance = testConstructionDestruction();
+
+#include <TClass.h>
+#include <TException.h>
+#include <vector>
+
+#include "errorHandling.h"
+
+bool testConstructionDestruction::fRunTest(classObject& aClass) {
+	auto cls = aClass.fGetTClass();
+	
+	UInt_t classSize = cls->Size();
+	UInt_t uintCount = classSize / sizeof(UInt_t) + 1;
+	std::vector<UInt_t> storageArenaVector(uintCount);
+	auto storageArena = storageArenaVector.data();
+
+	// Test default construction / destruction.
+	volatile bool constructionDestructionWorked = true;
+
+	TRY {
+		TObject* obj = static_cast<TObject*>(cls->New(storageArena));
+		cls->Destructor(obj, kTRUE);
+	} CATCH ( excode ) {
+		std::cerr << "Something bad happened... " << excode << std::endl;
+		constructionDestructionWorked = false;
+		Throw( excode );
+	}
+	ENDTRY;
+
+	if (!constructionDestructionWorked) {
+		errorHandling::throwError(cls->GetDeclFileName(), 0,
+		                          TString::Format("error: Construction/Destruction of class '%s' failed, manual check of backtrace above is needed!", cls->GetName()));
+	}
+
+	return constructionDestructionWorked;
+};
