@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
 			bool IsAworked = true;
 			if (obj->IsA() == nullptr) {
-				errorHandling::throwError(cls->GetDeclFileName(), 0,
+				errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError, 
 				                          TString::Format("IsA() of TObject-inheriting class '%s' return nullptr, this is bad!", cls->GetName()));
 				IsAworked = false;
 			}
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
 		TRY {
 			digest_1a = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
 		} CATCH ( excode ) {
-			errorHandling::throwError(cls->GetDeclFileName(), 0,
+			errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
 			                          TString::Format("Streaming of class '%s' failed fatally, needs manual investigation! Check the stacktrace!",
 			                                  cls->GetName()));
 			streamingWorked = false;
@@ -305,8 +305,8 @@ int main(int argc, char** argv) {
 				auto memberDataType   = memberDataMember->GetDataType();
 				if (memberCheck.second.first != digests_2[memberName].first) {
 					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
-					errorHandling::throwError(cls->GetDeclFileName(), &searchExpr,
-					                          TString::Format("error: Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
+					errorHandling::throwError(cls->GetDeclFileName(), &searchExpr, errorHandling::kError,
+					                          TString::Format("Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
 					                                  (memberDataType != nullptr) ? TString::Format("%s ", memberDataType->GetName()).Data() : "",
 					                                  memberName.Data(),
 					                                  cls->GetName()));
@@ -315,8 +315,8 @@ int main(int argc, char** argv) {
 
 			}
 			if (!foundAmemberToBlame) {
-				errorHandling::throwError(cls->GetDeclFileName(), 0,
-				                          TString::Format("error: Dataobject '%s' streams uninitialized memory after default construction, unable to find the member which causes this!", cls->GetName()));
+				errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
+				                          TString::Format("Dataobject '%s' streams uninitialized memory after default construction, unable to find the member which causes this!", cls->GetName()));
 			}
 		}
 	}

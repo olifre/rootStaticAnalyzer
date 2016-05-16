@@ -6,11 +6,25 @@
 #include <TPRegexp.h>
 #include <iostream>
 
-void errorHandling::throwErrorInternal(const char* file, Int_t line, const char* message) {
-	std::cerr << file << ":" << line << ": " << message << std::endl;
+void errorHandling::throwErrorInternal(const char* file, Int_t line, errorType errType, const char* message) {
+	std::cerr << file << ":" << line << ": ";
+	switch (errType) {
+	case kError:
+		std::cerr << "error: ";
+		break;
+	case kWarning:
+		std::cerr << "warning: ";
+		break;
+	case kNotice:
+		std::cerr << "note: ";
+		break;
+	default:
+		break;
+	}
+	std::cerr << message << std::endl;
 }
 
-Bool_t errorHandling::throwError(const char* file, TPRegexp* lineMatcher, const char* message) {
+Bool_t errorHandling::throwError(const char* file, TPRegexp* lineMatcher, errorType errType, const char* message) {
 	const TString& fileName = utilityFunctions::performPathLookup(file, kTRUE);
 	Int_t lineNo = 0;
 	if (gSystem->AccessPathName(fileName.Data()) == kFALSE) {
@@ -42,6 +56,6 @@ Bool_t errorHandling::throwError(const char* file, TPRegexp* lineMatcher, const 
 		}
 		fclose(f);
 	}
-	throwErrorInternal(fileName.Data(), lineNo, message);
+	throwErrorInternal(fileName.Data(), lineNo, errType, message);
 	return kTRUE;
 }

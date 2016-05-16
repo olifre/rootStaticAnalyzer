@@ -83,7 +83,8 @@ std::map<TString, std::pair<TMD5, TRealData*>> streamingUtils::getRealDataDigest
 			auto memberAddress = reinterpret_cast<UChar_t*>(obj) + rd->GetThisOffset();
 			if (digests.find(rd->GetName()) != digests.end()) {
 				errorHandling::throwError(cls->GetDeclFileName(), 0,
-				                          TString::Format("warning: Class '%s' contains more than one realdata-member called '%s', that's a bad idea!", cls->GetName(), rd->GetName()));
+				                          errorHandling::kWarning,
+				                          TString::Format("Class '%s' contains more than one realdata-member called '%s', that's a bad idea!", cls->GetName(), rd->GetName()));
 				continue;
 			}
 			auto& digest = digests[rd->GetName()];

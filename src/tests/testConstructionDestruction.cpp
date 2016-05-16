@@ -47,8 +47,8 @@ bool testConstructionDestruction::fRunTest(classObject& aClass) {
 	ENDTRY;
 
 	if (!constructionDestructionWorked) {
-		errorHandling::throwError(cls->GetDeclFileName(), 0,
-		                          TString::Format("error: Construction/Destruction of class '%s' failed, manual check of backtrace above is needed!", cls->GetName()));
+		errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError, 
+		                          TString::Format("Construction/Destruction of class '%s' failed, manual check of backtrace above is needed!", cls->GetName()));
 	}
 
 	return constructionDestructionWorked;

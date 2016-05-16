@@ -23,10 +23,16 @@
 class TPRegexp;
 
 class errorHandling {
+ public:
+	enum errorType {
+		kError,
+		kWarning,
+		kNotice
+	};
   private:
-	static void throwErrorInternal(const char* file, Int_t line, const char* message);
+	static void throwErrorInternal(const char* file, Int_t line, errorType errType, const char* message);
   public:
-	static Bool_t throwError(const char* file, TPRegexp* lineMatcher, const char* message);
+	static Bool_t throwError(const char* file, TPRegexp* lineMatcher, errorType errType, const char* message);
 };
 
 #endif /* __errorHandling_h__ */

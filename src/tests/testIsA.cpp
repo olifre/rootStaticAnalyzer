@@ -32,8 +32,8 @@ bool testIsA::fRunTest(classObject& aClass) {
 	TObject* obj = static_cast<TObject*>(cls->New(storageArena));
 	bool IsAworked = true;
 	if (obj->IsA() == nullptr) {
-		errorHandling::throwError(cls->GetDeclFileName(), 0,
-		                          TString::Format("error: IsA() of TObject-inheriting class '%s' return nullptr, this should not be!", cls->GetName()));
+		errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError, 
+		                          TString::Format("IsA() of TObject-inheriting class '%s' return nullptr, this should not be!", cls->GetName()));
 		IsAworked = false;
 	}
 	cls->Destructor(obj, kTRUE);
