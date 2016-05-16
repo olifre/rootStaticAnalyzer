@@ -20,6 +20,12 @@
 #define __utilityFunctions_h__
 
 #include <TString.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TPRegexp.h>
+#include <TInterpreter.h>
+
+#include <iostream>
 #include <algorithm>
 #include <string>
 #include <set>
