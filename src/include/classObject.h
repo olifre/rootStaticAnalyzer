@@ -25,27 +25,27 @@
 
 class classObject {
  protected:
-	TClass* fClass;         //< Underlying TClass.
-	std::string fClassName; //< Name of underlying class.
-	bool fInheritsTObject;  //< Inherits from TObject. 
-	bool fIsDataObject;     //< DataObject (TObjects with class version not <= 0).
-	bool fHasNew;           //< Whether New() is useable. 
-	bool fHasDelete;        //< Whether Destructor() is useable.
+	TClass* lClass;         //< Underlying TClass.
+	std::string lClassName; //< Name of underlying class.
+	bool lInheritsTObject;  //< Inherits from TObject. 
+	bool lIsDataObject;     //< DataObject (TObjects with class version not <= 0).
+	bool lHasNew;           //< Whether New() is useable. 
+	bool lHasDelete;        //< Whether Destructor() is useable.
 
-	std::map<std::string, bool> fTestedFeatures;
+	std::map<std::string, bool> lTestedFeatures;
 	
 public:
 	classObject(TClass* aClass) :
-		fClass{aClass},
-		fInheritsTObject{fClass->InheritsFrom(TObject::Class())},
-		fIsDataObject{fInheritsTObject && !(fClass->GetClassVersion() <= 0)},
-		fHasNew{fClass->GetNew() != nullptr},
-		fHasDelete{fClass->GetDestructor() != nullptr}
+		lClass{aClass},
+		lInheritsTObject{lClass->InheritsFrom(TObject::Class())},
+		lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
+		lHasNew{lClass->GetNew() != nullptr},
+		lHasDelete{lClass->GetDestructor() != nullptr}
 	{
 		
 	};
 	bool operator<( const classObject& other ) const {
-		return (fClassName) < (other.fClassName);
+		return (lClassName) < (other.lClassName);
 	};
 
 };

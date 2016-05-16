@@ -25,8 +25,8 @@
 class testInterface {
  private:
 	static std::map<std::string, testInterface*>& fGetTestMap() {
-		static std::map<std::string, testInterface*> fTestSet;
-		return fTestSet;
+		static std::map<std::string, testInterface*> lTestSet;
+		return lTestSet;
 	};
 	
 	static void fRegisterTest(std::string& aTest, testInterface* aThis) {
@@ -34,11 +34,11 @@ class testInterface {
 	}
 	
  protected:
-	std::string fTestName;
+	std::string lTestName;
 
  public:
- testInterface(std::string aTestName) : fTestName{aTestName} {
-		fRegisterTest(fTestName, this);
+ testInterface(std::string aTestName) : lTestName{aTestName} {
+		fRegisterTest(lTestName, this);
 	};
 	virtual ~testInterface() = default;
 	
