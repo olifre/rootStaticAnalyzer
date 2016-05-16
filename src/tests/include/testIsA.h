@@ -27,9 +27,7 @@ class testIsA : public testInterface {
 		return aClass.fInheritsTObject() && aClass.fWasTestedSuccessfully("ConstructionDestruction");
 	};
 
-	virtual bool fRunTest(classObject& /*aClass*/) {
-		return true;
-	};
+	virtual bool fRunTest(classObject& aClass);
 
  public:
  testIsA() : testInterface("IsA") { };

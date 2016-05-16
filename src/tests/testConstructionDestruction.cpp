@@ -41,7 +41,6 @@ bool testConstructionDestruction::fRunTest(classObject& aClass) {
 		TObject* obj = static_cast<TObject*>(cls->New(storageArena));
 		cls->Destructor(obj, kTRUE);
 	} CATCH ( excode ) {
-		std::cerr << "Something bad happened... " << excode << std::endl;
 		constructionDestructionWorked = false;
 		Throw( excode );
 	}
