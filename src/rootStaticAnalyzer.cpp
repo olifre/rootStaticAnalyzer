@@ -39,6 +39,8 @@
 #include <TMD5.h>
 #include <TPRegexp.h>
 
+#include <algorithm>
+
 #include "Options.h"
 
 #include "classObject.h"
