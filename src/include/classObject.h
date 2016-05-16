@@ -48,6 +48,10 @@ public:
 		return (lClassName) < (other.lClassName);
 	};
 
+	TClass* fGetTClass() const {
+		return lClass;
+	}
+
 	bool fHasNew() const {
 		return lHasNew;
 	}
