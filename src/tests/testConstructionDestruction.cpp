@@ -16,23 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __testIsA_h__
-#define __testIsA_h__
+#include "testConstructionDestruction.h"
 
-#include "testInterface.h"
-
-class testIsA : public testInterface {
- protected:
-	virtual bool fCheckPrerequisites(classObject& aClass) {
-		return aClass.fInheritsTObject() && aClass.fWasTestedSuccessfully("ConstructionDestruction");
-	};
-
-	virtual void fRunTest(classObject& /*aClass*/) {
-		
-	};
-
- public:
- testIsA() : testInterface("IsA") { };
-};
-
-#endif /* __testIsA_h__ */
+static testConstructionDestruction instance = testConstructionDestruction();

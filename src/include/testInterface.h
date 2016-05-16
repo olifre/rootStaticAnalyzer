@@ -20,7 +20,9 @@
 #define __testInterface_h__
 
 #include <map>
+#include <vector>
 #include <string>
+#include "classObject.h"
 
 class testInterface {
  private:
@@ -36,11 +38,36 @@ class testInterface {
  protected:
 	std::string lTestName;
 
+	virtual bool fCheckPrerequisites(classObject& /*aClass*/) {
+		return true;
+	};
+
+	virtual void fRunTest(classObject& /*aClass*/) = 0;
+
  public:
  testInterface(std::string aTestName) : lTestName{aTestName} {
 		fRegisterTest(lTestName, this);
 	};
 	virtual ~testInterface() = default;
+
+	virtual std::size_t fRunTests(std::vector<classObject>& allClasses) {
+		std::size_t testsRun = 0;
+		for (auto& cls : allClasses) {
+			if (cls.fWasTested(fGetTestName())) {
+				// We already tested this. 
+				continue;
+			}
+			if (fCheckPrerequisites(cls)) {
+				fRunTest(cls);
+				testsRun++;
+			}
+		}
+		return testsRun;
+	}
+
+	virtual std::string fGetTestName() const {
+		return lTestName;
+	}
 	
 	static const std::map<std::string, testInterface*>& fGetAllTests() {
 		return fGetTestMap();

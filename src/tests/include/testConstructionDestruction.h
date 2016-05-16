@@ -16,23 +16,24 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __testIsA_h__
-#define __testIsA_h__
+#ifndef __testConstructionDestruction_h__
+#define __testConstructionDestruction_h__
 
 #include "testInterface.h"
 
-class testIsA : public testInterface {
+class testConstructionDestruction : public testInterface {
  protected:
 	virtual bool fCheckPrerequisites(classObject& aClass) {
-		return aClass.fInheritsTObject() && aClass.fWasTestedSuccessfully("ConstructionDestruction");
+		return aClass.fHasNew() && aClass.fHasDelete();
 	};
 
 	virtual void fRunTest(classObject& /*aClass*/) {
 		
 	};
 
+
  public:
- testIsA() : testInterface("IsA") { };
+ testConstructionDestruction() : testInterface("ConstructionDestruction") { };
 };
 
-#endif /* __testIsA_h__ */
+#endif /* __testConstructionDestruction_h__ */

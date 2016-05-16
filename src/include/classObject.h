@@ -48,6 +48,28 @@ public:
 		return (lClassName) < (other.lClassName);
 	};
 
+	bool fHasNew() const {
+		return lHasNew;
+	}
+	bool fHasDelete() const {
+		return lHasDelete;
+	}
+
+	bool fInheritsTObject() const {
+		return lInheritsTObject;
+	}
+	
+	bool fWasTested(std::string aTestName) const {
+		return (lTestedFeatures.find(aTestName) != lTestedFeatures.end());
+	}
+	bool fWasTestedSuccessfully(std::string aTestName) const {
+		auto testRes = lTestedFeatures.find(aTestName);
+		if (testRes == lTestedFeatures.end()) {
+			return false;
+		} else {
+			return testRes->second;
+		}
+	}
 };
 
 #endif /* __classObject_h__ */

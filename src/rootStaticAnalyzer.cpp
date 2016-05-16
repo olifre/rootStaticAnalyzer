@@ -89,12 +89,12 @@ int main(int argc, char** argv) {
 
 	// Silent TClass lookup, triggers autoloading / autoparsing. 
 	std::set<TClass*> allTClasses;
-	std::set<classObject> allClassObjects;
+	std::vector<classObject> allClassObjects;
 	for (auto& clsName : allClasses) {
 		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
 		if (cls != nullptr) {
 			allTClasses.insert(cls);
-			allClassObjects.emplace(cls);
+			allClassObjects.emplace_back(cls);
 		}
 	}
 
