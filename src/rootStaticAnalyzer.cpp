@@ -80,11 +80,6 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	auto &foo = testInterface::fGetAllTests();
-	for (auto t : foo) {
-		std::cout << t.first << std::endl;
-	}
-
 	// Prepare sets of TClasses which can then be used for the various tests. 
 
 	// Silent TClass lookup, triggers autoloading / autoparsing. 
@@ -98,6 +93,17 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	auto &allTests = testInterface::fGetAllTests();
+	std::size_t executedTests = 0;
+	do {
+		executedTests = 0;
+		for (auto& test : allTests) {
+			auto testsRun = test.second->fRunTestOnClasses(allClassObjects);
+			std::cout << test.first << ": " << testsRun << std::endl;
+			executedTests += testsRun;
+		}
+	} while (executedTests > 0);
+	
 	// Set of TObject-inheriting classes. 
 	std::set<TClass*> allTObjects;
 	std::copy_if(allTClasses.begin(), allTClasses.end(), std::inserter(allTObjects, allTObjects.end()), [](TClass* cls){ return cls->InheritsFrom(TObject::Class()); });

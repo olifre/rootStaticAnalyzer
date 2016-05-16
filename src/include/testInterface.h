@@ -50,7 +50,7 @@ class testInterface {
 	};
 	virtual ~testInterface() = default;
 
-	virtual std::size_t fRunTests(std::vector<classObject>& allClasses) {
+	virtual std::size_t fRunTestOnClasses(std::vector<classObject>& allClasses) {
 		std::size_t testsRun = 0;
 		for (auto& cls : allClasses) {
 			if (cls.fWasTested(fGetTestName())) {
