@@ -42,7 +42,7 @@ class testInterface {
 		return true;
 	};
 
-	virtual void fRunTest(classObject& /*aClass*/) = 0;
+	virtual bool fRunTest(classObject& /*aClass*/) = 0;
 
  public:
  testInterface(std::string aTestName) : lTestName{aTestName} {
@@ -58,7 +58,8 @@ class testInterface {
 				continue;
 			}
 			if (fCheckPrerequisites(cls)) {
-				fRunTest(cls);
+				bool result = fRunTest(cls);
+				cls.fMarkTested(fGetTestName(), result);
 				testsRun++;
 			}
 		}

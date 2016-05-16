@@ -28,7 +28,7 @@ class testConstructionDestruction : public testInterface {
 	};
 
 	virtual void fRunTest(classObject& /*aClass*/) {
-		
+		return true;
 	};
 
 

@@ -62,6 +62,9 @@ public:
 	bool fWasTested(std::string aTestName) const {
 		return (lTestedFeatures.find(aTestName) != lTestedFeatures.end());
 	}
+	void fMarkTested(std::string aTestName, bool aTestResult) {
+		lTestedFeatures[aTestName] = aTestResult;
+	}
 	bool fWasTestedSuccessfully(std::string aTestName) const {
 		auto testRes = lTestedFeatures.find(aTestName);
 		if (testRes == lTestedFeatures.end()) {
