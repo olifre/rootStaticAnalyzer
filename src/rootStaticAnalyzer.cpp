@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
 		        || TString(cls.fGetClassName()).BeginsWith("TQ")
 		        || TString(cls.fGetClassName()).BeginsWith("TRoot")
 		        || TString(cls.fGetClassName()).BeginsWith("TProof")
+		        || TString(cls.fGetClassName()).BeginsWith("TPyth")
 		        || strcmp(cls.fGetClassName().c_str(), "TAFS") == 0
 		        || strcmp(cls.fGetClassName().c_str(), "TBrowser") == 0
 		        || strcmp(cls.fGetClassName().c_str(), "RooCategory") == 0
@@ -147,6 +148,8 @@ int main(int argc, char** argv) {
 			executedTests += testsRun;
 		}
 	} while (executedTests > 0);
+
+	return 0;
 
 	// Set of TObject-inheriting classes.
 	std::set<TClass*> allTObjects;
