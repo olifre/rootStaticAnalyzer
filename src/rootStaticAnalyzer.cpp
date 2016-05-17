@@ -95,12 +95,45 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	// BEGIN OF UGLY HACKS
+	for (auto& cls : allClassObjects) {
+		if (TString(cls.fGetClassName()).BeginsWith("TEve")
+		    || TString(cls.fGetClassName()).BeginsWith("TG")
+		    || TString(cls.fGetClassName()).BeginsWith("TMVA")
+		    || TString(cls.fGetClassName()).BeginsWith("TQ")
+		    || TString(cls.fGetClassName()).BeginsWith("TRoot")
+		    || TString(cls.fGetClassName()).BeginsWith("TProof")
+		    || strcmp(cls.fGetClassName().c_str(), "TAFS") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TBrowser") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "RooCategory") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TCivetweb") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TKDE") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TDrawFeedback") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TGraphStruct") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TMaterial") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TMixture") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TNode") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TNodeDiv") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TParallelCoord") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TParallelCoordVar") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TQueryDescription") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TRotMatrix") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TSessionDescription") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TMinuit2TraceObject") == 0
+		    || cls.fGetTClass()->InheritsFrom("TGedFrame")
+		    || cls.fGetTClass()->InheritsFrom("TShape")
+		    ) {
+			cls.fMarkTested("ConstructionDestruction", false);
+		}
+	}
+	// END OF UGLY HACKS
+
 	auto &allTests = testInterface::fGetAllTests();
 	std::size_t executedTests = 0;
 	do {
 		executedTests = 0;
 		for (auto& test : allTests) {
-			auto testsRun = test.second->fRunTestOnClasses(allClassObjects);
+			auto testsRun = test.second->fRunTestOnClasses(allClassObjects, debug);
 			std::cout << test.first << ": " << testsRun << std::endl;
 			executedTests += testsRun;
 		}

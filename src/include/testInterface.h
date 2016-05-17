@@ -22,6 +22,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "classObject.h"
 
@@ -51,7 +52,7 @@ class testInterface {
 	};
 	virtual ~testInterface() = default;
 
-	virtual std::size_t fRunTestOnClasses(std::vector<classObject>& allClasses) {
+	virtual std::size_t fRunTestOnClasses(std::vector<classObject>& allClasses, bool debug=false) {
 		std::size_t testsRun = 0;
 		for (auto& cls : allClasses) {
 			if (cls.fWasTested(fGetTestName())) {
@@ -59,6 +60,9 @@ class testInterface {
 				continue;
 			}
 			if (fCheckPrerequisites(cls)) {
+				if (debug) {
+					std::cout << fGetTestName() << ": Testing " << cls.fGetClassName() << std::endl;
+				}
 				bool result = fRunTest(cls);
 				cls.fMarkTested(fGetTestName(), result);
 				testsRun++;

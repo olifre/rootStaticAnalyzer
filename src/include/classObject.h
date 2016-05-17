@@ -36,12 +36,13 @@ class classObject {
 	
 public:
 	classObject(TClass* aClass) :
-		lClass{aClass},
-		lInheritsTObject{lClass->InheritsFrom(TObject::Class())},
-		lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
-		lHasNew{lClass->GetNew() != nullptr},
-		lHasDelete{lClass->GetDestructor() != nullptr}
-	{
+	lClass{aClass},
+		lClassName{aClass->GetName()},
+			lInheritsTObject{lClass->InheritsFrom(TObject::Class())},
+				lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
+					lHasNew{lClass->GetNew() != nullptr},
+						lHasDelete{lClass->GetDestructor() != nullptr}
+						{
 		
 	};
 	bool operator<( const classObject& other ) const {
@@ -50,6 +51,10 @@ public:
 
 	TClass* fGetTClass() const {
 		return lClass;
+	}
+
+	std::string fGetClassName() const {
+		return lClassName;
 	}
 
 	bool fHasNew() const {
