@@ -67,6 +67,10 @@ class classObject {
 		return lInheritsTObject;
 	}
 
+	bool fIsDataObject () const {
+		return lIsDataObject;
+	}
+
 	bool fWasTested(std::string aTestName) const {
 		return (lTestedFeatures.find(aTestName) != lTestedFeatures.end());
 	}

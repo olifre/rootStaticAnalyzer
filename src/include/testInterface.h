@@ -65,6 +65,9 @@ class testInterface {
 				}
 				bool result = fRunTest(cls);
 				cls.fMarkTested(fGetTestName(), result);
+				if (debug) {
+					std::cout << fGetTestName() << ": Tested  " << cls.fGetClassName() << " => " << (result ? "good" : "FAIL") << std::endl;
+				}
 				testsRun++;
 			}
 		}

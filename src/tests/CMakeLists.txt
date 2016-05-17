@@ -1,5 +1,9 @@
 
-list(APPEND ALLTESTS testIsA.cpp testConstructionDestruction.cpp)
+list(APPEND ALLTESTS
+	testConstructionDestruction.cpp
+	testIsA.cpp
+	testDataObjBases.cpp
+	)
 
 include_directories(${PROJECT_SOURCE_DIR}/src/include)
 include_directories(include)
