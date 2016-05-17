@@ -22,42 +22,56 @@
 #include <TRealData.h>
 #include <TBaseClass.h>
 #include <TList.h>
+#include <TDataMember.h>
 
 static testDataObjBases instance = testDataObjBases();
 
 bool testDataObjBases::fRunTest(classObject& aClass) {
 	auto cls = aClass.fGetTClass();
 	cls->BuildRealData();
-	TList* baseClasses = cls->GetListOfBases();
-	TIter nextBase(baseClasses);
-	TBaseClass* baseCl = nullptr;
-	bool hasUnstreamedBaseMembers = false;
-	while ((baseCl = dynamic_cast<TBaseClass*>(nextBase())) != nullptr) {
-		TClass* baseClPtr = baseCl->GetClassPointer();
-		if (baseClPtr->GetClassVersion() <= 0) {
-			auto realData = baseClPtr->GetListOfRealData();
-			if (realData != nullptr && realData->GetEntries() > 0) {
-				TString unstreamedData;
-				TIter nextRD(realData);
-				TRealData* rd = nullptr;
-				while ((rd = dynamic_cast<TRealData*>(nextRD())) != nullptr) {
-					if (rd->TestBit(TRealData::kTransient)) {
-						// Skip transient members.
-						continue;
-					}
-					if (unstreamedData.Length() > 0) {
-						unstreamedData += ",";
-					}
-					unstreamedData += rd->GetName();
-				}
-				if (unstreamedData.Length() > 0) {
-					hasUnstreamedBaseMembers = true;
-					errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
-					                          TString::Format("Data object class '%s' inherits from '%s' which has class version '%d', members: %s will not be streamed!",
-					                                  cls->GetName(), baseClPtr->GetName(), baseClPtr->GetClassVersion(), unstreamedData.Data()));
-				}
+	bool hasUnstreamedMembers = false;
+	auto realData = cls->GetListOfRealData();
+	if (realData != nullptr && realData->GetEntries() > 0) {
+		std::map<std::pair<std::string, Int_t>, std::vector<std::string>> unstreamedClassMembers;
+		TIter nextRD(realData);
+		TRealData* rd = nullptr;
+		while ((rd = dynamic_cast<TRealData*>(nextRD())) != nullptr) {
+			if (rd->TestBit(TRealData::kTransient)) {
+				// Skip transient members.
+				continue;
+			}
+			if (strchr(rd->GetName(), '.') != nullptr) {
+				// That's a member of one of our members. 
+				// Don't descend, since only transientness of OUR member is interesting here. 
+				continue;
+			}
+			auto dm = rd->GetDataMember();
+			auto dmClass = dm->GetClass();
+			if (dmClass->GetClassVersion() <= 0) {
+				// Ok, then this non-transient member will not be streamed - due to class-version zero! 
+				unstreamedClassMembers[std::make_pair(dmClass->GetName(), dmClass->GetClassVersion())].push_back(rd->GetName());
 			}
 		}
+		if (!unstreamedClassMembers.empty()) {
+			hasUnstreamedMembers = true;
+			TString unstreamedMembers;
+			for (auto& unstreamed : unstreamedClassMembers) {
+				if (unstreamedMembers.Length() > 0) {
+					unstreamedMembers += ", ";
+				}
+				TString memberList;
+				for (auto& memberName : unstreamed.second) {
+					if (memberList.Length() > 0) {
+						memberList += ", ";
+					}
+					memberList += memberName;
+				}
+				unstreamedMembers += TString::Format("members '%s' from class '%s' (class-version %d)", memberList.Data(), unstreamed.first.first.c_str(), unstreamed.first.second);
+			}
+			errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
+			                          TString::Format("Data object class '%s' will not stream the following indirect members: %s!",
+			                                          cls->GetName(), unstreamedMembers.Data()));
+		}
 	}
-	return !hasUnstreamedBaseMembers;
+	return !hasUnstreamedMembers;
 }
