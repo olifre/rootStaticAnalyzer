@@ -51,10 +51,11 @@
 
 int main(int argc, char** argv) {
 	OptionParser parser("Simple static analyzer for ROOT and ROOT-based projects");
-
+	
 	OptionContainer<std::string> rootMapPatterns('r', "rootMapPattern", "Regexp to match rootmaps to test with, can be given multiple times. '.*' matches all, no patterns given => test ROOT only.");
 	OptionContainer<std::string> classNamePatterns('c', "classNamePattern", "Regexp to match class-names to test, can be given multiple times. '.*' (or no pattern given) tests all.");
 	OptionContainer<std::string> classNameAntiPatterns('C', "classNameAntiPattern", "Regexp to match class-names NOT to test, can be given multiple times. Applied after a class has matched the classNamePattern.");
+	Option<bool> dataObjectsOnly('D', "dataObjectsOnly", "Consider only TObject-inheriting classes with Class-version > 0 for all tests.", false);
 	Option<bool> debug('d', "debug", "Make a lot of debug-noise to debug this program itself.", false);
 
 	// We need a TApplication-instance to allow for rootmap-checks - at least for ROOT 5.
@@ -82,47 +83,55 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	// Prepare sets of TClasses which can then be used for the various tests.
+	// Prepare sets of TClasses which can then be used for the various tests. 
 
-	// Silent TClass lookup, triggers autoloading / autoparsing.
+	// Silent TClass lookup, triggers autoloading / autoparsing. 
 	std::set<TClass*> allTClasses;
 	std::vector<classObject> allClassObjects;
 	for (auto& clsName : allClasses) {
 		auto cls = TClass::GetClass(clsName.c_str(), kTRUE);
 		if (cls != nullptr) {
 			allTClasses.insert(cls);
-			allClassObjects.emplace_back(cls);
+			bool toBeTested = true;
+			if (dataObjectsOnly) {
+				if (!cls->InheritsFrom(TObject::Class()) || !(cls->GetClassVersion()>0)) {
+					toBeTested = false;
+				}
+			}
+			if (toBeTested) {
+				allClassObjects.emplace_back(cls);
+			}
 		}
 	}
 
 	// BEGIN OF UGLY HACKS
 	for (auto& cls : allClassObjects) {
 		if (TString(cls.fGetClassName()).BeginsWith("TEve")
-		        || TString(cls.fGetClassName()).BeginsWith("TG")
-		        || TString(cls.fGetClassName()).BeginsWith("TMVA")
-		        || TString(cls.fGetClassName()).BeginsWith("TQ")
-		        || TString(cls.fGetClassName()).BeginsWith("TRoot")
-		        || TString(cls.fGetClassName()).BeginsWith("TProof")
-		        || strcmp(cls.fGetClassName().c_str(), "TAFS") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TBrowser") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "RooCategory") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TCivetweb") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TKDE") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TDrawFeedback") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TGraphStruct") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TMaterial") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TMixture") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TNode") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TNodeDiv") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TParallelCoord") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TParallelCoordVar") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TQueryDescription") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TRotMatrix") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TSessionDescription") == 0
-		        || strcmp(cls.fGetClassName().c_str(), "TMinuit2TraceObject") == 0
-		        || cls.fGetTClass()->InheritsFrom("TGedFrame")
-		        || cls.fGetTClass()->InheritsFrom("TShape")
-		   ) {
+		    || TString(cls.fGetClassName()).BeginsWith("TG")
+		    || TString(cls.fGetClassName()).BeginsWith("TMVA")
+		    || TString(cls.fGetClassName()).BeginsWith("TQ")
+		    || TString(cls.fGetClassName()).BeginsWith("TRoot")
+		    || TString(cls.fGetClassName()).BeginsWith("TProof")
+		    || strcmp(cls.fGetClassName().c_str(), "TAFS") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TBrowser") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "RooCategory") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TCivetweb") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TKDE") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TDrawFeedback") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TGraphStruct") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TMaterial") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TMixture") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TNode") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TNodeDiv") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TParallelCoord") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TParallelCoordVar") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TQueryDescription") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TRotMatrix") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TSessionDescription") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TMinuit2TraceObject") == 0
+		    || cls.fGetTClass()->InheritsFrom("TGedFrame")
+		    || cls.fGetTClass()->InheritsFrom("TShape")
+		    ) {
 			cls.fMarkTested("ConstructionDestruction", false);
 		}
 	}
@@ -138,18 +147,14 @@ int main(int argc, char** argv) {
 			executedTests += testsRun;
 		}
 	} while (executedTests > 0);
-
-	// Set of TObject-inheriting classes.
+	
+	// Set of TObject-inheriting classes. 
 	std::set<TClass*> allTObjects;
-	std::copy_if(allTClasses.begin(), allTClasses.end(), std::inserter(allTObjects, allTObjects.end()), [](TClass * cls) {
-		return cls->InheritsFrom(TObject::Class());
-	});
+	std::copy_if(allTClasses.begin(), allTClasses.end(), std::inserter(allTObjects, allTObjects.end()), [](TClass* cls){ return cls->InheritsFrom(TObject::Class()); });
 
-	// Set of
+	// Set of 
 	std::set<TClass*> allDataObjects;
-	std::copy_if(allTObjects.begin(), allTObjects.end(), std::inserter(allDataObjects, allDataObjects.end()), [](TClass * cls) {
-		return !(cls->GetClassVersion() <= 0);
-	});
+	std::copy_if(allTObjects.begin(), allTObjects.end(), std::inserter(allDataObjects, allDataObjects.end()), [](TClass* cls){ return !(cls->GetClassVersion() <= 0); });
 
 	TBufferFile buf(TBuffer::kWrite, 10000);
 
@@ -211,7 +216,7 @@ int main(int argc, char** argv) {
 			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
 			bool IsAworked = true;
 			if (obj->IsA() == nullptr) {
-				errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
+				errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError, 
 				                          TString::Format("IsA() of TObject-inheriting class '%s' return nullptr, this is bad!", cls->GetName()));
 				IsAworked = false;
 			}

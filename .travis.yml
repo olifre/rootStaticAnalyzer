@@ -81,4 +81,4 @@ script:
   - make install
   - cd ${TRAVIS_BUILD_DIR}/install
   - rootStaticAnalyzer --help
-  - rootStaticAnalyzer -d -c "T.*"
+  - rootStaticAnalyzer -d -c "T.*" -D
