@@ -24,7 +24,13 @@ void errorHandling::throwErrorInternal(const char* file, Int_t line, errorType e
 	std::cerr << message << std::endl;
 }
 
-Bool_t errorHandling::throwError(const char* file, TPRegexp* lineMatcher, errorType errType, const char* message) {
+Bool_t errorHandling::throwError(const char* file, Int_t line, errorType errType, const char* message) {
+	const TString& fileName = utilityFunctions::performPathLookup(file, kTRUE);
+	throwErrorInternal(fileName.Data(), line, errType, message);
+	return kTRUE;
+}
+
+Bool_t errorHandling::throwError(const char* file, TPRegexp& lineMatcher, errorType errType, const char* message) {
 	const TString& fileName = utilityFunctions::performPathLookup(file, kTRUE);
 	Int_t lineNo = 0;
 	if (gSystem->AccessPathName(fileName.Data()) == kFALSE) {
@@ -34,7 +40,7 @@ Bool_t errorHandling::throwError(const char* file, TPRegexp* lineMatcher, errorT
 		Bool_t found = kFALSE;
 		while (fgets(line, sizeof(line), f) != nullptr) {
 			lineNo++;
-			if (lineMatcher->MatchB(line)) {
+			if (lineMatcher.MatchB(line)) {
 				// Found match!
 				// Check whether there is a suppression active for this line.
 				TPRegexp suppressExpr(".*rootStaticAnalyzer: ignore.*");

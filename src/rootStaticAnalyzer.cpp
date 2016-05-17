@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
 				auto memberDataType   = memberDataMember->GetDataType();
 				if (memberCheck.second.first != digests_2[memberName].first) {
 					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
-					errorHandling::throwError(cls->GetDeclFileName(), &searchExpr, errorHandling::kError,
+					errorHandling::throwError(cls->GetDeclFileName(), searchExpr, errorHandling::kError,
 					                          TString::Format("Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
 					                                  (memberDataType != nullptr) ? TString::Format("%s ", memberDataType->GetName()).Data() : "",
 					                                  memberName.Data(),

@@ -20,7 +20,7 @@
 #define __errorHandling_h__
 
 #include <Rtypes.h>
-class TPRegexp;
+#include <TPRegexp.h>
 
 class errorHandling {
  public:
@@ -32,7 +32,8 @@ class errorHandling {
   private:
 	static void throwErrorInternal(const char* file, Int_t line, errorType errType, const char* message);
   public:
-	static Bool_t throwError(const char* file, TPRegexp* lineMatcher, errorType errType, const char* message);
+	static Bool_t throwError(const char* file, Int_t line, errorType errType, const char* message);
+	static Bool_t throwError(const char* file, TPRegexp& lineMatcher, errorType errType, const char* message);
 };
 
 #endif /* __errorHandling_h__ */
