@@ -24,26 +24,25 @@
 #include <string>
 
 class classObject {
- protected:
+  protected:
 	TClass* lClass;         //< Underlying TClass.
 	std::string lClassName; //< Name of underlying class.
-	bool lInheritsTObject;  //< Inherits from TObject. 
+	bool lInheritsTObject;  //< Inherits from TObject.
 	bool lIsDataObject;     //< DataObject (TObjects with class version not <= 0).
-	bool lHasNew;           //< Whether New() is useable. 
+	bool lHasNew;           //< Whether New() is useable.
 	bool lHasDelete;        //< Whether Destructor() is useable.
 
 	std::map<std::string, bool> lTestedFeatures;
-	
-public:
+
+  public:
 	classObject(TClass* aClass) :
-	lClass{aClass},
+		lClass{aClass},
 		lClassName{aClass->GetName()},
-			lInheritsTObject{lClass->InheritsFrom(TObject::Class())},
-				lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
-					lHasNew{lClass->GetNew() != nullptr},
-						lHasDelete{lClass->GetDestructor() != nullptr}
-						{
-		
+		lInheritsTObject{lClass->InheritsFrom(TObject::Class())},
+		lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
+		lHasNew{lClass->GetNew() != nullptr},
+		lHasDelete{lClass->GetDestructor() != nullptr} {
+
 	};
 	bool operator<( const classObject& other ) const {
 		return (lClassName) < (other.lClassName);
@@ -67,7 +66,7 @@ public:
 	bool fInheritsTObject() const {
 		return lInheritsTObject;
 	}
-	
+
 	bool fWasTested(std::string aTestName) const {
 		return (lTestedFeatures.find(aTestName) != lTestedFeatures.end());
 	}

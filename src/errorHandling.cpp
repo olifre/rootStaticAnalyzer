@@ -9,17 +9,17 @@
 void errorHandling::throwErrorInternal(const char* file, Int_t line, errorType errType, const char* message) {
 	std::cerr << file << ":" << line << ": ";
 	switch (errType) {
-	case kError:
-		std::cerr << "error: ";
-		break;
-	case kWarning:
-		std::cerr << "warning: ";
-		break;
-	case kNotice:
-		std::cerr << "note: ";
-		break;
-	default:
-		break;
+		case kError:
+			std::cerr << "error: ";
+			break;
+		case kWarning:
+			std::cerr << "warning: ";
+			break;
+		case kNotice:
+			std::cerr << "note: ";
+			break;
+		default:
+			break;
 	}
 	std::cerr << message << std::endl;
 }

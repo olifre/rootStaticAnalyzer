@@ -28,7 +28,7 @@ static testConstructionDestruction instance = testConstructionDestruction();
 
 bool testConstructionDestruction::fRunTest(classObject& aClass) {
 	auto cls = aClass.fGetTClass();
-	
+
 	UInt_t classSize = cls->Size();
 	UInt_t uintCount = classSize / sizeof(UInt_t) + 1;
 	std::vector<UInt_t> storageArenaVector(uintCount);
@@ -47,7 +47,7 @@ bool testConstructionDestruction::fRunTest(classObject& aClass) {
 	ENDTRY;
 
 	if (!constructionDestructionWorked) {
-		errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError, 
+		errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
 		                          TString::Format("Construction/Destruction of class '%s' failed, manual check of backtrace above is needed!", cls->GetName()));
 	}
 

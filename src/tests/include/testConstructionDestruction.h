@@ -22,15 +22,15 @@
 #include "testInterface.h"
 
 class testConstructionDestruction : public testInterface {
- protected:
+  protected:
 	virtual bool fCheckPrerequisites(classObject& aClass) {
 		return aClass.fHasNew() && aClass.fHasDelete();
 	};
 
 	virtual bool fRunTest(classObject& aClass);
 
- public:
- testConstructionDestruction() : testInterface("ConstructionDestruction") { };
+  public:
+	testConstructionDestruction() : testInterface("ConstructionDestruction") { };
 };
 
 #endif /* __testConstructionDestruction_h__ */

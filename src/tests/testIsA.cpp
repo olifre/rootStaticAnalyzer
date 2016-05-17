@@ -28,11 +28,11 @@ bool testIsA::fRunTest(classObject& aClass) {
 	UInt_t uintCount = classSize / sizeof(UInt_t) + 1;
 	std::vector<UInt_t> storageArenaVector(uintCount);
 	auto storageArena = storageArenaVector.data();
-	
+
 	TObject* obj = static_cast<TObject*>(cls->New(storageArena));
 	bool IsAworked = true;
 	if (obj->IsA() == nullptr) {
-		errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError, 
+		errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
 		                          TString::Format("IsA() of TObject-inheriting class '%s' return nullptr, this should not be!", cls->GetName()));
 		IsAworked = false;
 	}

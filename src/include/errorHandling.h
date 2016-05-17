@@ -23,7 +23,7 @@
 #include <TPRegexp.h>
 
 class errorHandling {
- public:
+  public:
 	enum errorType {
 		kError,
 		kWarning,

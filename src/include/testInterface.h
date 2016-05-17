@@ -27,17 +27,17 @@
 #include "classObject.h"
 
 class testInterface {
- private:
+  private:
 	static std::map<std::string, testInterface*>& fGetTestMap() {
 		static std::map<std::string, testInterface*> lTestSet;
 		return lTestSet;
 	};
-	
+
 	static void fRegisterTest(std::string& aTest, testInterface* aThis) {
 		fGetTestMap()[aTest] = aThis;
 	}
-	
- protected:
+
+  protected:
 	std::string lTestName;
 
 	virtual bool fCheckPrerequisites(classObject& /*aClass*/) {
@@ -46,17 +46,17 @@ class testInterface {
 
 	virtual bool fRunTest(classObject& /*aClass*/) = 0;
 
- public:
- testInterface(std::string aTestName) : lTestName{aTestName} {
+  public:
+	testInterface(std::string aTestName) : lTestName{aTestName} {
 		fRegisterTest(lTestName, this);
 	};
 	virtual ~testInterface() = default;
 
-	virtual std::size_t fRunTestOnClasses(std::vector<classObject>& allClasses, bool debug=false) {
+	virtual std::size_t fRunTestOnClasses(std::vector<classObject>& allClasses, bool debug = false) {
 		std::size_t testsRun = 0;
 		for (auto& cls : allClasses) {
 			if (cls.fWasTested(fGetTestName())) {
-				// We already tested this. 
+				// We already tested this.
 				continue;
 			}
 			if (fCheckPrerequisites(cls)) {
@@ -74,7 +74,7 @@ class testInterface {
 	virtual std::string fGetTestName() const {
 		return lTestName;
 	}
-	
+
 	static const std::map<std::string, testInterface*>& fGetAllTests() {
 		return fGetTestMap();
 	};
