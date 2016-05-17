@@ -151,89 +151,16 @@ int main(int argc, char** argv) {
 
 	return 0;
 
-	// Set of TObject-inheriting classes.
-	std::set<TClass*> allTObjects;
-	std::copy_if(allTClasses.begin(), allTClasses.end(), std::inserter(allTObjects, allTObjects.end()), [](TClass * cls) {
-		return cls->InheritsFrom(TObject::Class());
-	});
+}
 
-	// Set of
-	std::set<TClass*> allDataObjects;
-	std::copy_if(allTObjects.begin(), allTObjects.end(), std::inserter(allDataObjects, allDataObjects.end()), [](TClass * cls) {
-		return !(cls->GetClassVersion() <= 0);
-	});
 
-	TBufferFile buf(TBuffer::kWrite, 10000);
+	// BEGIN OF DEAD CODE. THIS NEEDS TO BE CONVERTED TO MODULAR TESTS!
 
-	for (auto& cls : allDataObjects) {
-		if (cls->GetNew() == nullptr) {
-			// Abstract class, skip.
-			continue;
-		}
-		if (cls->GetDestructor() == nullptr) {
-			// Class with protected destructor, skip.
-			continue;
-		}
 
-		//HACK
-		if (TString(cls->GetName()).BeginsWith("TEve")
-		        || TString(cls->GetName()).BeginsWith("TGL")
-		        || strcmp(cls->GetName(), "TGraphStruct") == 0
-		        || strcmp(cls->GetName(), "TMaterial") == 0
-		        || strcmp(cls->GetName(), "TMixture") == 0
-		        || strcmp(cls->GetName(), "TNode") == 0
-		        || strcmp(cls->GetName(), "TNodeDiv") == 0
-		        || strcmp(cls->GetName(), "TParallelCoord") == 0
-		        || strcmp(cls->GetName(), "TParallelCoordVar") == 0
-		        || strcmp(cls->GetName(), "TQueryDescription") == 0
-		        || strcmp(cls->GetName(), "TRotMatrix") == 0
-		        || strcmp(cls->GetName(), "TSessionDescription") == 0
-		        || strcmp(cls->GetName(), "TMinuit2TraceObject") == 0
-		        || cls->InheritsFrom("TShape")
-		   ) {
-			continue;
-		}
-		//HACK
+	
+//TBufferFile buf(TBuffer::kWrite, 10000);
 
-		UInt_t classSize = cls->Size();
-		UInt_t uintCount = classSize / sizeof(UInt_t) + 1;
-		std::vector<UInt_t> storageArenaVector(uintCount);
-		auto storageArena = storageArenaVector.data();
-
-		// Test default construction / destruction.
-		Bool_t constructionDestructionFailed = false;
-		//std::cout << "BEGIN Constructor/destructor test for " << cls->GetName() << std::endl;
-		TRY {
-			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
-			cls->Destructor(obj, kTRUE);
-		} CATCH ( excode ) {
-			std::cerr << "Something bad happened... " << excode << std::endl;
-			constructionDestructionFailed = true;
-			Throw( excode );
-		}
-		ENDTRY;
-		//std::cout << "END Constructor/destructor test for " << cls->GetName() << std::endl;
-
-		if (constructionDestructionFailed) {
-			continue;
-		}
-
-		// Check IsA().
-		{
-			TObject* obj = static_cast<TObject*>(cls->New(storageArena));
-			bool IsAworked = true;
-			if (obj->IsA() == nullptr) {
-				errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
-				                          TString::Format("IsA() of TObject-inheriting class '%s' return nullptr, this is bad!", cls->GetName()));
-				IsAworked = false;
-			}
-			cls->Destructor(obj, kTRUE);
-			if (!IsAworked) {
-				continue;
-			}
-		}
-
-		//HACK
+		/*
 		if (strcmp(cls->GetName(), "TKDE") == 0
 		        || strcmp(cls->GetName(), "TCanvas") == 0
 		        || strcmp(cls->GetName(), "TInspectCanvas") == 0
@@ -245,36 +172,10 @@ int main(int argc, char** argv) {
 		        || strcmp(cls->GetName(), "TBranchObject") == 0) {
 			continue;
 		}
-		//HACK
+		*/
 
-		TList* baseClasses = cls->GetListOfBases();
-		TIter nextBase(baseClasses);
-		TBaseClass* baseCl = nullptr;
-		while ((baseCl = dynamic_cast<TBaseClass*>(nextBase())) != nullptr) {
-			TClass* baseClPtr = baseCl->GetClassPointer();
-			if (baseClPtr->GetClassVersion() <= 0) {
-				auto realData = baseClPtr->GetListOfRealData();
-				if (realData != nullptr && realData->GetEntries() > 0) {
-					TString unstreamedData;
-					TIter nextRD(realData);
-					TRealData* rd = nullptr;
-					while ((rd = dynamic_cast<TRealData*>(nextRD())) != nullptr) {
-						if (rd->TestBit(TRealData::kTransient)) {
-							// Skip transient members.
-							continue;
-						}
-						if (unstreamedData.Length() > 0) {
-							unstreamedData += ",";
-						}
-						unstreamedData += rd->GetName();
-					}
-					if (unstreamedData.Length() > 0) {
-						std::cerr << "ERROR: " << "Class " << cls->GetName() << " inherits from " << baseClPtr->GetName() << " which has class version " << baseClPtr->GetClassVersion() << ", members: " << unstreamedData.Data() << " will not be streamed!" << std::endl;
-					}
-				}
-			}
-		}
-
+		// STREAMING TEST
+	/*
 		UInt_t uninitializedUint_1 = 0xB33FD34D;
 		UInt_t uninitializedUint_2 = 0xD34DB33F;
 
@@ -307,7 +208,6 @@ int main(int argc, char** argv) {
 		if (!streamingWorked) {
 			continue;
 		}
-
 		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
 		obj = static_cast<TObject*>(cls->New(storageArena));
 		TString digest_1b;
@@ -340,10 +240,11 @@ int main(int argc, char** argv) {
 			Throw( excode );
 		}
 		ENDTRY;
-
+	*/
 		/* We only test whether uninitialized memory is picked up.
 		   In that case, the digest_1x will agree, but disagree with digest_2 which used the differently
 		   initialized arena. */
+	/*
 		if ((digest_1a == digest_1b) && (digest_1a != digest_2)) {
 			// Blame members!
 			Bool_t foundAmemberToBlame = kFALSE;
@@ -369,6 +270,4 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-
-	return 0;
-}
+	*/
