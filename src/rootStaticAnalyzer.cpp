@@ -48,6 +48,8 @@
 #include "errorHandling.h"
 #include "streamingUtils.h"
 
+#include "testingInitHook.h"
+
 int main(int argc, char** argv) {
 	OptionParser parser("Simple static analyzer for ROOT and ROOT-based projects");
 
@@ -137,6 +139,7 @@ int main(int argc, char** argv) {
 	}
 	// END OF UGLY HACKS
 
+	testingInitHook::initTests();
 	auto &allTests = testInterface::fGetAllTests();
 	if (debug) {
 		std::cout << "Available tests:" << std::endl;
