@@ -4,6 +4,7 @@ list(APPEND ALLTESTS
 	testIsA.cpp
 	testDataObjBases.cpp
 	testStreaming.cpp
+	testStreamingUninitialized.cpp
 	)
 
 include_directories(${PROJECT_SOURCE_DIR}/src/include)
