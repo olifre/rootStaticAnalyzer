@@ -115,6 +115,8 @@ int main(int argc, char** argv) {
 		        || TString(cls.fGetClassName()).BeginsWith("TProof")
 		        || TString(cls.fGetClassName()).BeginsWith("TPyth")
 		        || strcmp(cls.fGetClassName().c_str(), "TAFS") == 0
+		        || strcmp(cls.fGetClassName().c_str(), "TCanvas") == 0
+		        || strcmp(cls.fGetClassName().c_str(), "TInspectCanvas") == 0
 		        || strcmp(cls.fGetClassName().c_str(), "TBrowser") == 0
 		        || strcmp(cls.fGetClassName().c_str(), "RooCategory") == 0
 		        || strcmp(cls.fGetClassName().c_str(), "TCivetweb") == 0
@@ -134,9 +136,20 @@ int main(int argc, char** argv) {
 		        || cls.fGetTClass()->InheritsFrom("TGedFrame")
 		        || cls.fGetTClass()->InheritsFrom("TShape")
 		   ) {
+			if (!cls.fIsDataObject()) {
+				cls.fMarkTested("ConstructionDestruction", false);
+			}
+		}
+		if (TString(cls.fGetClassName()).BeginsWith("TEve")
+		    || TString(cls.fGetClassName()).BeginsWith("TPyth") /* FLOOD OF TEXT */
+		    || strcmp(cls.fGetClassName().c_str(), "TGWindow") == 0
+		    || cls.fGetTClass()->InheritsFrom("TShape")) {
 			cls.fMarkTested("ConstructionDestruction", false);
 		}
 		if (strcmp(cls.fGetClassName().c_str(), "TBranchObject") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TCanvas") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TInspectCanvas") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TGWindow") == 0
 		    || strcmp(cls.fGetClassName().c_str(), "TTreeRow") == 0
 		    || strcmp(cls.fGetClassName().c_str(), "TClonesArray") == 0
 		    || strcmp(cls.fGetClassName().c_str(), "TStreamerInfo") == 0) {
