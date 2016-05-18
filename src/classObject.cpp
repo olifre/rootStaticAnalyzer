@@ -16,21 +16,23 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __testConstructionDestruction_h__
-#define __testConstructionDestruction_h__
+#include "classObject.h"
 
-#include "testInterface.h"
+#include <TObject.h>
+#include <TClass.h>
+#include <TInterpreter.h>
 
-class testConstructionDestruction : public testInterface {
-  protected:
-	virtual bool fCheckPrerequisites(classObject& aClass) {
-		return aClass.fHasNew() && aClass.fHasDefaultConstructor() && aClass.fHasDelete();
+classObject::classObject(TClass* aClass) :
+	lClass{aClass},
+	lClassName{aClass->GetName()},
+	lInheritsTObject{lClass->InheritsFrom(TObject::Class())},
+	lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
+	lHasNew{lClass->GetNew() != nullptr},
+	lHasDelete{lClass->GetDestructor() != nullptr} {
+		if (aClass->HasInterpreterInfo()) {
+			R__LOCKGUARD(gInterpreterMutex);
+			lHasDefaultConstructor = gInterpreter->ClassInfo_HasDefaultConstructor(aClass->GetClassInfo());
+		} else {
+			lHasDefaultConstructor = lHasNew;
+		}
 	};
-
-	virtual bool fRunTest(classObject& aClass);
-
-  public:
-	testConstructionDestruction() : testInterface("ConstructionDestruction") { };
-};
-
-#endif /* __testConstructionDestruction_h__ */

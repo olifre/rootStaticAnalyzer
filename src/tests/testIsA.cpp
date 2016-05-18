@@ -19,6 +19,8 @@
 #include "testIsA.h"
 #include "errorHandling.h"
 
+#include <TClass.h>
+
 static testIsA instance = testIsA();
 
 bool testIsA::fRunTest(classObject& aClass) {

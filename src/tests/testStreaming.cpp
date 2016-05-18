@@ -21,6 +21,7 @@
 #include "errorHandling.h"
 #include "streamingUtils.h"
 
+#include <TClass.h>
 #include <TException.h>
 
 static testStreaming instance = testStreaming();

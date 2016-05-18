@@ -19,9 +19,10 @@
 #ifndef __classObject_h__
 #define __classObject_h__
 
-#include <TObject.h>
-#include <TClass.h>
+#include <map>
 #include <string>
+
+class TClass;
 
 class classObject {
   protected:
@@ -31,19 +32,13 @@ class classObject {
 	bool lIsDataObject;     //< DataObject (TObjects with class version not <= 0).
 	bool lHasNew;           //< Whether New() is useable.
 	bool lHasDelete;        //< Whether Destructor() is useable.
+	bool lHasDefaultConstructor; //< Whether there is a real default constructor. 
 
 	std::map<std::string, bool> lTestedFeatures;
 
   public:
-	classObject(TClass* aClass) :
-		lClass{aClass},
-		lClassName{aClass->GetName()},
-		lInheritsTObject{lClass->InheritsFrom(TObject::Class())},
-		lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
-		lHasNew{lClass->GetNew() != nullptr},
-		lHasDelete{lClass->GetDestructor() != nullptr} {
+	classObject(TClass* aClass);
 
-	};
 	bool operator<( const classObject& other ) const {
 		return (lClassName) < (other.lClassName);
 	};
@@ -58,6 +53,9 @@ class classObject {
 
 	bool fHasNew() const {
 		return lHasNew;
+	}
+	bool fHasDefaultConstructor() const {
+		return lHasDefaultConstructor;
 	}
 	bool fHasDelete() const {
 		return lHasDelete;

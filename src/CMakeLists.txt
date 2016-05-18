@@ -1,6 +1,6 @@
 add_subdirectory(tests)
 
-add_executable(rootStaticAnalyzer rootStaticAnalyzer.cpp utilityFunctions.cpp streamingUtils.cpp errorHandling.cpp)
+add_executable(rootStaticAnalyzer classObject.cpp rootStaticAnalyzer.cpp utilityFunctions.cpp streamingUtils.cpp errorHandling.cpp)
 
 include_directories(include)
 include_directories(tests/include)
