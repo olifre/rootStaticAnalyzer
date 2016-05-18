@@ -34,7 +34,6 @@
 #include <TRealData.h>
 #include <TDataMember.h>
 #include <TDataType.h>
-#include <TBufferFile.h>
 #include <TString.h>
 #include <TMD5.h>
 #include <TPRegexp.h>
@@ -154,120 +153,120 @@ int main(int argc, char** argv) {
 }
 
 
-	// BEGIN OF DEAD CODE. THIS NEEDS TO BE CONVERTED TO MODULAR TESTS!
+// BEGIN OF DEAD CODE. THIS NEEDS TO BE CONVERTED TO MODULAR TESTS!
 
 
-	
+
 //TBufferFile buf(TBuffer::kWrite, 10000);
 
-		/*
-		if (strcmp(cls->GetName(), "TKDE") == 0
-		        || strcmp(cls->GetName(), "TCanvas") == 0
-		        || strcmp(cls->GetName(), "TInspectCanvas") == 0
-		        || strcmp(cls->GetName(), "TGeoBranchArray") == 0
-		        || strcmp(cls->GetName(), "TStreamerInfo") == 0
-		        || strcmp(cls->GetName(), "TTreeRow") == 0
-		        || strcmp(cls->GetName(), "THelix") == 0
-		        || strcmp(cls->GetName(), "TClonesArray") == 0
-		        || strcmp(cls->GetName(), "TBranchObject") == 0) {
-			continue;
+/*
+if (strcmp(cls->GetName(), "TKDE") == 0
+        || strcmp(cls->GetName(), "TCanvas") == 0
+        || strcmp(cls->GetName(), "TInspectCanvas") == 0
+        || strcmp(cls->GetName(), "TGeoBranchArray") == 0
+        || strcmp(cls->GetName(), "TStreamerInfo") == 0
+        || strcmp(cls->GetName(), "TTreeRow") == 0
+        || strcmp(cls->GetName(), "THelix") == 0
+        || strcmp(cls->GetName(), "TClonesArray") == 0
+        || strcmp(cls->GetName(), "TBranchObject") == 0) {
+	continue;
+}
+*/
+
+// STREAMING TEST
+/*
+	UInt_t uninitializedUint_1 = 0xB33FD34D;
+	UInt_t uninitializedUint_2 = 0xD34DB33F;
+
+	// Stream it!
+	bool streamingWorked = true;
+	TObject* obj;
+	std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
+	obj = static_cast<TObject*>(cls->New(storageArena));
+	TString digest_1a;
+	TRY {
+		digest_1a = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
+	} CATCH ( excode ) {
+		errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
+		                          TString::Format("Streaming of class '%s' failed fatally, needs manual investigation! Check the stacktrace!",
+		                                  cls->GetName()));
+		streamingWorked = false;
+		Throw( excode );
+	}
+	ENDTRY;
+	decltype(streamingUtils::getRealDataDigests(obj)) digests_1a;
+	if (streamingWorked) {
+		digests_1a = streamingUtils::getRealDataDigests(obj);
+	}
+	TRY {
+		cls->Destructor(obj, kTRUE);
+	} CATCH ( excode ) {
+		Throw( excode );
+	}
+	ENDTRY;
+	if (!streamingWorked) {
+		continue;
+	}
+	std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
+	obj = static_cast<TObject*>(cls->New(storageArena));
+	TString digest_1b;
+	TRY {
+		digest_1b = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
+	} CATCH ( excode ) {
+		Throw( excode );
+	}
+	ENDTRY;
+	TRY {
+		cls->Destructor(obj, kTRUE);
+	} CATCH ( excode ) {
+		Throw( excode );
+	}
+	ENDTRY;
+
+	std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_2);
+	obj = static_cast<TObject*>(cls->New(storageArena));
+	TString digest_2;
+	TRY {
+		digest_2 = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
+	} CATCH ( excode ) {
+		Throw( excode );
+	}
+	ENDTRY;
+	auto digests_2 = streamingUtils::getRealDataDigests(obj);
+	TRY {
+		cls->Destructor(obj, kTRUE);
+	} CATCH ( excode ) {
+		Throw( excode );
+	}
+	ENDTRY;
+*/
+/* We only test whether uninitialized memory is picked up.
+   In that case, the digest_1x will agree, but disagree with digest_2 which used the differently
+   initialized arena. */
+/*
+	if ((digest_1a == digest_1b) && (digest_1a != digest_2)) {
+		// Blame members!
+		Bool_t foundAmemberToBlame = kFALSE;
+		for (auto memberCheck : digests_1a) {
+			auto& memberName = memberCheck.first;
+			auto memberRealData   = memberCheck.second.second;
+			auto memberDataMember = memberRealData->GetDataMember();
+			auto memberDataType   = memberDataMember->GetDataType();
+			if (memberCheck.second.first != digests_2[memberName].first) {
+				TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
+				errorHandling::throwError(cls->GetDeclFileName(), searchExpr, errorHandling::kError,
+				                          TString::Format("Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
+				                                  (memberDataType != nullptr) ? TString::Format("%s ", memberDataType->GetName()).Data() : "",
+				                                  memberName.Data(),
+				                                  cls->GetName()));
+				foundAmemberToBlame = kTRUE;
+			}
+
 		}
-		*/
-
-		// STREAMING TEST
-	/*
-		UInt_t uninitializedUint_1 = 0xB33FD34D;
-		UInt_t uninitializedUint_2 = 0xD34DB33F;
-
-		// Stream it!
-		bool streamingWorked = true;
-		TObject* obj;
-		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
-		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_1a;
-		TRY {
-			digest_1a = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
-		} CATCH ( excode ) {
+		if (!foundAmemberToBlame) {
 			errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
-			                          TString::Format("Streaming of class '%s' failed fatally, needs manual investigation! Check the stacktrace!",
-			                                  cls->GetName()));
-			streamingWorked = false;
-			Throw( excode );
-		}
-		ENDTRY;
-		decltype(streamingUtils::getRealDataDigests(obj)) digests_1a;
-		if (streamingWorked) {
-			digests_1a = streamingUtils::getRealDataDigests(obj);
-		}
-		TRY {
-			cls->Destructor(obj, kTRUE);
-		} CATCH ( excode ) {
-			Throw( excode );
-		}
-		ENDTRY;
-		if (!streamingWorked) {
-			continue;
-		}
-		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_1);
-		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_1b;
-		TRY {
-			digest_1b = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
-		} CATCH ( excode ) {
-			Throw( excode );
-		}
-		ENDTRY;
-		TRY {
-			cls->Destructor(obj, kTRUE);
-		} CATCH ( excode ) {
-			Throw( excode );
-		}
-		ENDTRY;
-
-		std::fill(&storageArena[0], &storageArena[uintCount], uninitializedUint_2);
-		obj = static_cast<TObject*>(cls->New(storageArena));
-		TString digest_2;
-		TRY {
-			digest_2 = streamingUtils::streamObjectToBufferAndChecksum(buf, obj);
-		} CATCH ( excode ) {
-			Throw( excode );
-		}
-		ENDTRY;
-		auto digests_2 = streamingUtils::getRealDataDigests(obj);
-		TRY {
-			cls->Destructor(obj, kTRUE);
-		} CATCH ( excode ) {
-			Throw( excode );
-		}
-		ENDTRY;
-	*/
-		/* We only test whether uninitialized memory is picked up.
-		   In that case, the digest_1x will agree, but disagree with digest_2 which used the differently
-		   initialized arena. */
-	/*
-		if ((digest_1a == digest_1b) && (digest_1a != digest_2)) {
-			// Blame members!
-			Bool_t foundAmemberToBlame = kFALSE;
-			for (auto memberCheck : digests_1a) {
-				auto& memberName = memberCheck.first;
-				auto memberRealData   = memberCheck.second.second;
-				auto memberDataMember = memberRealData->GetDataMember();
-				auto memberDataType   = memberDataMember->GetDataType();
-				if (memberCheck.second.first != digests_2[memberName].first) {
-					TPRegexp searchExpr(TString::Format(".*[^_a-zA-Z]%s[^_a-zA-Z0-9].*", memberName.Data()));
-					errorHandling::throwError(cls->GetDeclFileName(), searchExpr, errorHandling::kError,
-					                          TString::Format("Streamed member '%s%s' of dataobject '%s' not initialized by constructor!",
-					                                  (memberDataType != nullptr) ? TString::Format("%s ", memberDataType->GetName()).Data() : "",
-					                                  memberName.Data(),
-					                                  cls->GetName()));
-					foundAmemberToBlame = kTRUE;
-				}
-
-			}
-			if (!foundAmemberToBlame) {
-				errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
-				                          TString::Format("Dataobject '%s' streams uninitialized memory after default construction, unable to find the member which causes this!", cls->GetName()));
-			}
+			                          TString::Format("Dataobject '%s' streams uninitialized memory after default construction, unable to find the member which causes this!", cls->GetName()));
 		}
 	}
-	*/
+}
+*/

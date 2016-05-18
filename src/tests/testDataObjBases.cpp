@@ -41,14 +41,14 @@ bool testDataObjBases::fRunTest(classObject& aClass) {
 				continue;
 			}
 			if (strchr(rd->GetName(), '.') != nullptr) {
-				// That's a member of one of our members. 
-				// Don't descend, since only transientness of OUR member is interesting here. 
+				// That's a member of one of our members.
+				// Don't descend, since only transientness of OUR member is interesting here.
 				continue;
 			}
 			auto dm = rd->GetDataMember();
 			auto dmClass = dm->GetClass();
 			if (dmClass->GetClassVersion() <= 0) {
-				// Ok, then this non-transient member will not be streamed - due to class-version zero! 
+				// Ok, then this non-transient member will not be streamed - due to class-version zero!
 				unstreamedClassMembers[std::make_pair(dmClass->GetName(), dmClass->GetClassVersion())].push_back(rd->GetName());
 			}
 		}
@@ -70,7 +70,7 @@ bool testDataObjBases::fRunTest(classObject& aClass) {
 			}
 			errorHandling::throwError(cls->GetDeclFileName(), 0, errorHandling::kError,
 			                          TString::Format("Data object class '%s' will not stream the following indirect members: %s!",
-			                                          cls->GetName(), unstreamedMembers.Data()));
+			                                  cls->GetName(), unstreamedMembers.Data()));
 		}
 	}
 	return !hasUnstreamedMembers;
