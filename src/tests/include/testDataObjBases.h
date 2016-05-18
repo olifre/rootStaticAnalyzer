@@ -24,7 +24,7 @@
 class testDataObjBases : public testInterface {
   protected:
 	virtual bool fCheckPrerequisites(classObject& aClass) {
-		return aClass.fIsDataObject();
+		return aClass.fIsDataObject() && aClass.fWasTestedSuccessfully("ConstructionDestruction");
 	};
 
 	virtual bool fRunTest(classObject& aClass);
