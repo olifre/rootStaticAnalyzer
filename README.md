@@ -32,5 +32,14 @@ This streams all objects which are dataobjects (and for which Construction/Destr
 
 Potential segmentation faults are captured and a stacktrace plus an error message are shown. 
 
+#### Test for streaming of uninitialized data after default construction
+Objects which survived the simple streaming test are constructed / destructed in a prefilled arena. 
+
+They are streamed in a buffer, which is checksummed afterwards. Checksums for simple members (using known memberoffsets) are also made. 
+
+The objects are then constructed to a differently prefilled arena. 
+
+If the streamed information changes, the objects have streamed uninitialized content, and we might even be able to blame the member. 
+
 # Examples
 (not yet there)
