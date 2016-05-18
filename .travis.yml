@@ -56,12 +56,6 @@ env:
   - ROOT_VERSION=5.34.36 PATH=/usr/lib/ccache:${PATH}:${TRAVIS_BUILD_DIR}/install/bin LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TRAVIS_BUILD_DIR}/install/lib
 
 install:
-  # g++-5 on linux
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-5"; fi
-
-  # clang-3.8 on linux
-  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8"; fi
-
   # install ROOT. Not in Ubuntu 12.04, only later again... Travis still uses stone-aged 12.04. 
   - mkdir root
   - cd root
@@ -73,6 +67,12 @@ install:
   - make
   - make install
   - source ${TRAVIS_BUILD_DIR}/install/root/bin/thisroot.sh
+
+  # g++-5 on linux
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-5"; fi
+
+  # clang-3.8 on linux
+  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8"; fi
 
 before_script:
   - mkdir -p ${TRAVIS_BUILD_DIR}/build
