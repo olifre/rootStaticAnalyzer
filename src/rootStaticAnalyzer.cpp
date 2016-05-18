@@ -144,6 +144,12 @@ int main(int argc, char** argv) {
 			std::cout << "- " << test.first << std::endl;
 		}
 	}
+	
+	if (allTests.empty()) {
+		std::cerr << "No tests found, seems loading of the shared library failed! Fix this!" << std::endl;
+		exit(1);
+	}
+	
 	std::size_t executedTests = 0;
 	do {
 		executedTests = 0;
