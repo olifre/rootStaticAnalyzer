@@ -27,5 +27,10 @@ This can happen if a dataobjects (meant for streaming) inherits from a class whi
 
 In this often not-so-obvious case, the content of the members from the base-class are lost on streaming the derived class. 
 
+#### Simple streaming after default construction
+This streams all objects which are dataobjects (and for which Construction/Destruction did not fail) to a memory buffer. 
+
+Potential segmentation faults are captured and a stacktrace plus an error message are shown. 
+
 # Examples
 (not yet there)
