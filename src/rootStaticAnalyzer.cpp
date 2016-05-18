@@ -136,6 +136,12 @@ int main(int argc, char** argv) {
 		   ) {
 			cls.fMarkTested("ConstructionDestruction", false);
 		}
+		if (strcmp(cls.fGetClassName().c_str(), "TBranchObject") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TTreeRow") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TClonesArray") == 0
+		    || strcmp(cls.fGetClassName().c_str(), "TStreamerInfo") == 0) {
+			cls.fMarkTested("Streaming", false);
+		}
 	}
 	// END OF UGLY HACKS
 
