@@ -29,8 +29,7 @@ classObject::classObject(TClass* aClass) :
 	lIsDataObject{lInheritsTObject && !(lClass->GetClassVersion() <= 0)},
 	lHasNew{lClass->GetNew() != nullptr},
 	lHasDelete{lClass->GetDestructor() != nullptr} {
-		if (aClass->HasInterpreterInfo()) {
-			R__LOCKGUARD(gInterpreterMutex);
+		if (aClass->GetClassInfo() != nullptr) {
 			lHasDefaultConstructor = gInterpreter->ClassInfo_HasDefaultConstructor(aClass->GetClassInfo());
 		} else {
 			lHasDefaultConstructor = lHasNew;
