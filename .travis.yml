@@ -10,8 +10,10 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.8
     packages:
       - g++-5
+      - clang-3.8
       - x11-common
       - libx11-6
       - x11-utils
@@ -56,6 +58,9 @@ env:
 install:
   # g++-5 on linux
   - if [ "$CXX" = "g++" ]; then export CXX="g++-5"; fi
+
+  # clang-3.8 on linux
+  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8"; fi
 
   # install ROOT. Not in Ubuntu 12.04, only later again... Travis still uses stone-aged 12.04. 
   - mkdir root
