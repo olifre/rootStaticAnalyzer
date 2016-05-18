@@ -138,6 +138,12 @@ int main(int argc, char** argv) {
 	// END OF UGLY HACKS
 
 	auto &allTests = testInterface::fGetAllTests();
+	if (debug) {
+		std::cout << "Available tests:" << std::endl;
+		for (auto& test : allTests) {
+			std::cout << "- " << test.first << std::endl;
+		}
+	}
 	std::size_t executedTests = 0;
 	do {
 		executedTests = 0;
