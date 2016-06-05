@@ -2,26 +2,32 @@ language: cpp
 
 sudo: false
 
-compiler:
-  - clang
-  - gcc
-
 matrix:
   include:
-    - clang:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env: 
+        - CC=gcc-5
+        - CXX=g++-5
+    - compiler: clang
       addons:
         apt:
           sources:
             - llvm-toolchain-precise-3.8
           packages:
             - clang-3.8
+      env: 
+        - CC=clang-3.8
+        - CXX=clang++-3.8
 
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
     packages:
-      - g++-5
       - x11-common
       - libx11-6
       - x11-utils
@@ -76,11 +82,7 @@ install:
   - make install
   - source ${TRAVIS_BUILD_DIR}/install/root/bin/thisroot.sh
 
-  # g++-5 on linux
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-5"; fi
-
-  # clang-3.8 on linux
-  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8"; fi
+  - export CXX="${COMPILER}"
 
 before_script:
   - mkdir -p ${TRAVIS_BUILD_DIR}/build
