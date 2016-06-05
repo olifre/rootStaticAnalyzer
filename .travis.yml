@@ -14,6 +14,8 @@ matrix:
       env: 
         - CC=gcc-5
         - CXX=g++-5
+        - ROOT_VERSION=5.34.36 
+        - PATH=/usr/lib/ccache:${PATH}:${TRAVIS_BUILD_DIR}/install/bin LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TRAVIS_BUILD_DIR}/install/lib
     - compiler: clang
       addons:
         apt:
@@ -24,6 +26,8 @@ matrix:
       env: 
         - CC=clang-3.8
         - CXX=clang++-3.8
+        - ROOT_VERSION=5.34.36 
+        - PATH=/usr/lib/ccache:${PATH}:${TRAVIS_BUILD_DIR}/install/bin LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TRAVIS_BUILD_DIR}/install/lib
 
 addons:
   apt:
@@ -65,9 +69,6 @@ addons:
 cache:
   directories:
     - $HOME/.ccache
-
-env:
-  - ROOT_VERSION=5.34.36 PATH=/usr/lib/ccache:${PATH}:${TRAVIS_BUILD_DIR}/install/bin LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TRAVIS_BUILD_DIR}/install/lib
 
 install:
   # install ROOT. Not in Ubuntu 12.04, only later again... Travis still uses stone-aged 12.04. 
