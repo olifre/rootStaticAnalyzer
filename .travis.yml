@@ -12,8 +12,8 @@ matrix:
           packages:
             - g++-5
       env: 
-        - CC=gcc-5
-        - CXX=g++-5
+        - REAL_CC=gcc-5
+        - REAL_CXX=g++-5
         - ROOT_VERSION=5.34.36 
         - PATH=/usr/lib/ccache:${PATH}:${TRAVIS_BUILD_DIR}/install/bin LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TRAVIS_BUILD_DIR}/install/lib
     - compiler: clang
@@ -24,8 +24,8 @@ matrix:
           packages:
             - clang-3.8
       env: 
-        - CC=clang-3.8
-        - CXX=clang++-3.8
+        - REAL_CC=clang-3.8
+        - REAL_CXX=clang++-3.8
         - ROOT_VERSION=5.34.36 
         - PATH=/usr/lib/ccache:${PATH}:${TRAVIS_BUILD_DIR}/install/bin LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TRAVIS_BUILD_DIR}/install/lib
 
@@ -71,6 +71,9 @@ cache:
     - $HOME/.ccache
 
 install:
+  - export CC=${REAL_CC}
+  - export CXX=${REAL_CXX}
+
   # install ROOT. Not in Ubuntu 12.04, only later again... Travis still uses stone-aged 12.04. 
   - mkdir root
   - cd root
@@ -82,8 +85,6 @@ install:
   - make
   - make install
   - source ${TRAVIS_BUILD_DIR}/install/root/bin/thisroot.sh
-
-  - export CXX="${COMPILER}"
 
 before_script:
   - mkdir -p ${TRAVIS_BUILD_DIR}/build
